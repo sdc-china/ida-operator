@@ -21,7 +21,7 @@ podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $(oc registry
 
 ### Installing the IDA Operator
 
-Step 1. Go to your namespace in which you want to install the operator.
+Step 1. Go to your project in which you want to install the operator.
 
 ```
 oc project <project_name>
@@ -42,8 +42,6 @@ scripts/loadImages.sh -p ida-3.0.0.tgz -r $(oc registry info)/ida
 ```
 
 Step 3. Deploy the IDA operator manifest files to your cluster.
-
-**Notes:** Where registry_url is the value for your internal docker registry.
 
 ```
 chmod +x scripts/deployOperator.sh
@@ -76,7 +74,7 @@ scripts/deleteOperator.sh
 
 ### Preparing to install IDA Instance
 
-Step 1. Preparing the IDA storage
+Step 1. Preparing the IDA storage.
 
 ```
 chmod +x scripts/createDataPVC.sh
@@ -86,11 +84,11 @@ scripts/createDataPVC.sh -s <storage_class>
 scripts/createDataPVC.sh -s managed-nfs-storage
 ```
 
-Step 2. Preparing Database
+Step 2. Preparing Database.
 
 - Using Embedded Database
 
-Create an ida-db-pvc and ida-embedded-db-secret for IDA custom resource.
+Create ida-db-pvc and ida-embedded-db-secret for IDA custom resource.
 
 ```
 chmod +x scripts/createDBPVC.sh
@@ -130,7 +128,6 @@ scripts/createDBSecret.sh -i $(oc registry info)/ida/ida:3.0.0
 
 Step 1. Deploying an IDA Custom Resource.
 
-**Notes:** Where registry_url is the value for your internal docker registry.
 
 ```
 chmod +x scripts/deployIDA.sh
