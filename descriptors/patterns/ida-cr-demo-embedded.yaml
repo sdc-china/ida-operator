@@ -1,0 +1,23 @@
+apiVersion: sdc.ibm.com/v1
+kind: IDACluster
+metadata:
+  name: ida-demo
+spec:
+  prefixName: ida-demo
+
+  idaDatabase:
+    type: mysql
+    internalDatabase:
+      enabled: true
+      image: mysql:5.7
+      imagePullPolicy: Always
+      secretVolume: ida-embedded-db-secret
+      existingPVCName: ida-db-pvc
+    externalDatabase:
+      enabled: false
+
+  idaWeb:
+    image: <IDA_IMAGE>
+    imagePullPolicy: Always
+    pvcName: ida-data-pvc
+    replicas: 1
