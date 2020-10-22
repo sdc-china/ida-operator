@@ -2,7 +2,7 @@
 
 ## Before you begin
 
-1\. Log in to your cluster
+Step 1. Log in to your cluster
 
 ```
 #Using the OpenShift CLI:
@@ -10,7 +10,7 @@
 oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 ```
 
-2\. Log in to your docker registry
+Step 2. Log in to your docker registry
 
 ```
 #Using the Podman CLI:
@@ -19,36 +19,39 @@ podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $(oc registry
 
 ## IDA Operator
 
-### Installing the IDA Operator
+IDA operator watches all namespaces. You only need to install the Operator in one namespace.
 
-Step 1. Go to your project in which you want to install the operator.
+### Installing IDA Operator
+
+Step 1. Go to the project that you want to install IDA Operator.
 
 ```
-oc project <project_name>
+oc project <operator_project_name>
+
+#For example:
+oc project ida-operator
 ```
 
-Step 2. Load and push ida-operator image and ida image to your docker registry.
+Step 2. Load and push ida-operator image to your docker registry.
 
-Path to \<ida-operator ROOT Folder\>
+Path to <ida-operator ROOT Folder>
 
 ```
 chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-operator-<version>.tgz -r $(oc registry info)/<project_name>
-scripts/loadImages.sh -p ida-<version>.tgz -r $(oc registry info)/<project_name>
+scripts/loadImages.sh -p ida-operator-<version>.tgz -r $(oc registry info)/<operator_project_name>
 
 #For example:
-scripts/loadImages.sh -p ida-operator-1.0.0.tgz -r $(oc registry info)/ida
-scripts/loadImages.sh -p ida-3.0.0.tgz -r $(oc registry info)/ida
+scripts/loadImages.sh -p ida-operator-1.0.0.tgz -r $(oc registry info)/ida-operator
 ```
 
-Step 3. Deploy the IDA operator manifest files to your cluster.
+Step 3. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
-scripts/deployOperator.sh -i <operator_image> -n <project_name>
+scripts/deployOperator.sh -i <operator_image> -n <operator_project_name>
 
 #For example:
-scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida-operator:1.0.0 -n ida
+scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:1.0.0 -n ida-operator
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -74,7 +77,28 @@ scripts/deleteOperator.sh
 
 ### Preparing to install IDA Instance
 
-Step 1. Preparing the IDA storage.
+Step 1. Go to the project that you want to install IDA Instance.
+
+```
+oc project <ida_project_name>
+
+#For example:
+oc project ida-demo
+```
+
+Step 2. Load and push ida image to your docker registry.
+
+Path to <ida-operator ROOT Folder>
+
+```
+chmod +x scripts/loadImages.sh
+scripts/loadImages.sh -p ida-<version>.tgz -r $(oc registry info)/<ida_project_name>
+
+#For example:
+scripts/loadImages.sh -p ida-3.0.0.tgz -r $(oc registry info)/ida-demo
+```
+
+Step 3. Preparing the IDA storage.
 
 ```
 chmod +x scripts/createDataPVC.sh
@@ -84,11 +108,11 @@ scripts/createDataPVC.sh -s <storage_class>
 scripts/createDataPVC.sh -s managed-nfs-storage
 ```
 
-Step 2. Preparing Database.
+Step 4. Preparing Database.
 
 - Using Embedded Database
 
-Create ida-db-pvc and ida-embedded-db-secret for IDA custom resource.
+Create an ida-db-pvc and ida-embedded-db-secret for IDA custom resource.
 
 ```
 chmod +x scripts/createDBPVC.sh
@@ -124,20 +148,19 @@ scripts/createDBSecret.sh -i $(oc registry info)/ida/ida:3.0.0
   --from-literal=DATABASE_PASSWORD=mysqladmin
   ```
 
-### Installing IDA Custom Resource
+### Installing IDA Instance
 
-Step 1. Deploying an IDA Custom Resource.
-
+Step 1. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
 scripts/deployIDA.sh -i <ida_image>
 
 #For example:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:3.0.0
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:3.0.0
 
 #If success, you will see the log from your console
-Success! You could visit IDA by the url "https://$(oc get route | grep ida-web | awk '{print$2}')/ida"
+Success! You could visit IDA by the url "https://<HOST>/ida"
 ```
 
 Step 2. Monitor the pod until it shows a STATUS of "Running":
@@ -146,7 +169,13 @@ Step 2. Monitor the pod until it shows a STATUS of "Running":
 oc get pods -w
 ```
 
-### Uninstall IDA Custom Resource
+**Notes:** When started, you can monitor the IDA logs with the following command:
+
+```
+oc logs -f deployment/ida-demo-ida-web
+```
+
+### Uninstall IDA Instance
 
 ```
 oc delete IDACluster ida-demo
