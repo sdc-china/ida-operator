@@ -77,48 +77,50 @@ fi
 oc apply -f ./deploycr.yaml
 
 echo -e "\033[1;32mDeploying IDA custom resource. \033[0m"
+
+
+if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
+    # wait DB POD running
+    while true; do
+        echo -e "\x1B[1mChecking IDA Embedded DB Pod Status\x1B[0m"
+        IDA_POD_NAME=$(oc get pod | grep ida-db | awk '{print$1}')
+        IDA_POD_STATUS=$(oc get pod | grep ida-db | awk '{print$3}')
+        echo "The Embedded DB Pod status is $IDA_POD_STATUS"
+        if [ "$IDA_POD_STATUS" = "Running" ] ; then
+            break;
+        else
+            echo "Waiting IDA Embedded DB Pod Running..."
+            sleep 10
+        fi
+    done
+fi
+
 while true; do
-    echo -e "\x1B[1mChecking IDA POD Status\x1B[0m"
+    echo -e "\x1B[1mChecking IDA Web Pod Status\x1B[0m"
     IDA_POD_NAME=$(oc get pod | grep ida-web | awk '{print$1}')
     IDA_POD_STATUS=$(oc get pod | grep ida-web | awk '{print$3}')
     echo "The Pod status is $IDA_POD_STATUS"
     if [ "$IDA_POD_STATUS" = "Running" ] ; then
         echo -e "\033[1;32mCopying JDBC drivers. \033[0m"
         oc rsync $JDBC_DRIVER_DIR $IDA_POD_NAME:/var/ida/data/
+        echo -e "\033[1;32mRestarting IDA Web Pod. \033[0m"
         oc delete pod $IDA_POD_NAME
         break;
     else
-        echo "Waiting..."
+        echo "Waiting IDA Web Pod Running..."
         sleep 10
     fi
 done
 
 while true; do
-    echo -e "\x1B[1mChecking IDA POD Status\x1B[0m"
+    echo -e "\x1B[1mChecking IDA Web Pod Status\x1B[0m"
     IDA_POD_NAME=$(oc get pod | grep ida-web | awk '{print$1}')
     IDA_POD_STATUS=$(oc get pod | grep ida-web | awk '{print$3}')
     echo "The Pod status is $IDA_POD_STATUS"
     if [ "$IDA_POD_STATUS" = "Running" ] ; then
         break;
     else
-        echo "Waiting..."
-        sleep 10
-    fi
-done
-
-
-while true; do
-    IDA_POD_NAME=$(oc get pod | grep ida-web | awk '{print$1}')
-    oc logs $IDA_POD_NAME >> log
-    IDA_READY=$(cat log | grep 'Application ida started')
-    echo $IDA_READY
-    if [ ! -z "$IDA_READY"  ] ; then
-        rm -f log
-        sleep 3
-        echo "IDA started!"
-        break;
-    else
-        echo "IDA is starting..."
+        echo "Waiting IDA Web Pod Running..."
         sleep 10
     fi
 done
