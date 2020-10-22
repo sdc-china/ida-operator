@@ -34,7 +34,7 @@ oc project ida-operator
 
 Step 2. Load and push ida-operator image to your docker registry.
 
-Path to <ida-operator ROOT Folder>
+Path to ida-operator **ROOT Folder**
 
 ```
 chmod +x scripts/loadImages.sh
@@ -88,7 +88,7 @@ oc project ida-demo
 
 Step 2. Load and push ida image to your docker registry.
 
-Path to <ida-operator ROOT Folder>
+Path to ida-operator **ROOT Folder**
 
 ```
 chmod +x scripts/loadImages.sh
