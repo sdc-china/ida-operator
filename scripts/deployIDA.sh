@@ -8,11 +8,15 @@ source ${CUR_DIR}/scripts/helper/common.sh
 JDBC_DRIVER_DIR=${CUR_DIR}/scripts/jdbc
 
 function show_help {
-    echo -e "\nUsage: deployIDA.sh -i ida_image \n"
+    echo -e "\nUsage: deployIDA.sh -i ida_image [-t] [-d] \n"
     echo "Options:"
     echo "  -h  Display help"
     echo "  -i  IDA image name"
     echo "      For example: registry_url/ida:version"
+    echo "  -t  Optional: Installation type"
+    echo "      For example: embedded or external"
+    echo "  -d  Optional: Database type, the default is mysql"
+    echo "      For example: mysql, db2 or oracle"
 }
 
 if [[ $1 == "" ]]
@@ -20,13 +24,17 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:" opt; do
+    while getopts "h?i:t:d:" opt; do
         case "$opt" in
         h|\?)
             show_help
             exit 0
             ;;
         i)  IMAGEREGISTRY=$OPTARG
+            ;;
+        t)  INSTALLTYPE=$OPTARG
+            ;;
+        d)  DATABASE=$OPTARG
             ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
@@ -56,8 +64,10 @@ function select_installation_type(){
         esac
     done
 }
-
-select_installation_type
+if [ -z "$INSTALLATION_TYPE" ]
+then
+    select_installation_type
+fi
 
 if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
     [ -f ./deploycr.yaml ] && rm ./deploycr.yaml
@@ -68,10 +78,17 @@ then
     cp ./descriptors/patterns/ida-cr-demo-external.yaml ./deploycr.yaml
 fi
 
+
 if [ ! -z ${IMAGEREGISTRY} ]; then
 # Change the location of the image
 echo "Using the IDA image name: $IMAGEREGISTRY"
 cat ./deploycr.yaml | sed -e "s|image: <IDA_IMAGE>|image: \"$IMAGEREGISTRY\" |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${DATABASE} ]; then
+# Change the database type
+echo "Using the Database: $DATABASE"
+cat ./deploycr.yaml | sed -e "s|type: mysql|type: $DATABASE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 oc apply -f ./deploycr.yaml
