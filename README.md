@@ -32,29 +32,17 @@ oc project <operator_project_name>
 oc project ida-operator
 ```
 
-Step 2. Load and push ida-operator image to your docker registry.
-
-Path to ida-operator **ROOT Folder**
-
-```
-chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-operator-<version>.tgz -r $(oc registry info)/<operator_project_name>
-
-#For example:
-scripts/loadImages.sh -p ida-operator-1.0.2.tgz -r $(oc registry info)/ida-operator
-```
-
-Step 3. Deploy IDA operator to your cluster.
+Step 2. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name>
 
 #For example:
-scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:1.0.2 -n ida-operator
+scripts/deployOperator.sh -i ctesdc/ida-operator:1.0.2 -n ida-operator
 ```
 
-Step 4. Monitor the pod until it shows a STATUS of "Running":
+Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w
