@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 1.0.2
+    release: 1.0.3
 spec:
   group: sdc.ibm.com
   names:

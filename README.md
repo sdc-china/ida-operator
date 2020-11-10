@@ -80,13 +80,19 @@ Path to ida-operator **ROOT Folder**
 
 ```
 chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-<version>.tgz -r $(oc registry info)/<ida_project_name>
+scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #For example:
 scripts/loadImages.sh -p ida-3.0.0.tgz -r $(oc registry info)/ida-demo
 ```
 
-Step 3. Preparing the IDA storage.
+Step 3. Preparing docker registry secret (Optional)
+If you are using external docker registry, then you may need to create the docker pull secret.
+```
+oc create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
+```
+
+Step 4. Preparing the IDA storage.
 
 ```
 chmod +x scripts/createDataPVC.sh
@@ -96,7 +102,7 @@ scripts/createDataPVC.sh -s <storage_class>
 scripts/createDataPVC.sh -s managed-nfs-storage
 ```
 
-Step 4. Preparing Database.
+Step 5. Preparing Database.
 
 - Using Embedded Database
 
@@ -111,7 +117,7 @@ scripts/createDBSecret.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
-scripts/createDBSecret.sh -i $(oc registry info)/ida/ida:3.0.0
+scripts/createDBSecret.sh -i $(oc registry info)/ida-demo/ida:3.1.0
 ```
 
 - Using External Database
@@ -144,10 +150,15 @@ Step 1. Deploying an IDA Instance.
 chmod +x scripts/deployIDA.sh
 scripts/deployIDA.sh -i <ida_image>
 
-#For example:
+#Example of using openshift internal docker registry:
 scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:3.0.0
 
-#If success, you will see the log from your console
+#Example of using external docker registry:
+scripts/deployIDA.sh -i <docker_registry>/ida:3.0.0 -s ida-docker-secret
+```
+
+If success, you will see the log from your console
+```
 Success! You could visit IDA by the url "https://<HOST>/ida"
 ```
 

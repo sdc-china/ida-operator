@@ -19,5 +19,6 @@ spec:
   idaWeb:
     image: <IDA_IMAGE>
     imagePullPolicy: Always
+    imagePullSecrets:
     pvcName: ida-data-pvc
     replicas: 1
