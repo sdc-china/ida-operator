@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: operator
-          image: image-registry.openshift-image-registry.svc:5000/ida/ida-operator:1.0.0
+          image: ctesdc/ida-operator:1.0.3
           imagePullPolicy: Always
           args:
             - --metrics-addr=127.0.0.1:8080
