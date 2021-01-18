@@ -88,7 +88,6 @@ scripts/loadImages.sh -p ida-3.1.0.tgz -r $(oc registry info)/ida-demo
 
 Step 3. Preparing docker registry secret (Optional)
 If you are using external docker registry, then you may need to create the docker pull secret.
-
 ```
 oc create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
 ```
@@ -107,18 +106,18 @@ Step 5. Preparing Database.
 
 - Using Embedded Database
 
-Create an ida-db-pvc and ida-embedded-db-secret for IDA custom resource.
+Create an ida-db-pvc and ida-embedded-db-configmap for IDA custom resource.
 
 ```
 chmod +x scripts/createDBPVC.sh
 scripts/createDBPVC.sh -s <storage_class>
 
-chmod +x scripts/createDBSecret.sh
-scripts/createDBSecret.sh -i <ida_image>
+chmod +x scripts/createDBConfigMap.sh
+scripts/createDBConfigMap.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
-scripts/createDBSecret.sh -i $(oc registry info)/ida-demo/ida:3.1.0
+scripts/createDBConfigMap.sh -i $(oc registry info)/ida-demo/ida:3.1.0
 ```
 
 - Using External Database
@@ -159,7 +158,6 @@ scripts/deployIDA.sh -i <docker_registry>/ida:3.1.0 -s ida-docker-secret
 ```
 
 If success, you will see the log from your console
-
 ```
 Success! You could visit IDA by the url "https://<HOST>/ida"
 ```
