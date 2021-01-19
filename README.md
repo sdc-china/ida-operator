@@ -39,7 +39,7 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name>
 
 #For example:
-scripts/deployOperator.sh -i ctesdc/ida-operator:1.0.3 -n ida-operator
+scripts/deployOperator.sh -i ctesdc/ida-operator:1.0.5 -n ida-operator
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
