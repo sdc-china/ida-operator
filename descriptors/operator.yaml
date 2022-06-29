@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 1.0.5
+    release: 22.0.0
 spec:
   replicas: 1
   selector:
@@ -19,9 +19,11 @@ spec:
     spec:
       containers:
         - name: operator
-          image: ctesdc/ida-operator:1.0.5
+          image: ctesdc/ida-operator:22.0.0
           imagePullPolicy: Always
           args:
             - --metrics-addr=127.0.0.1:8080
+      imagePullSecrets:
+        - name: <IMAGE_PULL_SECRET>
       terminationGracePeriodSeconds: 10
       serviceAccountName: ida-operator

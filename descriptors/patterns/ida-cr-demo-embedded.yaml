@@ -1,9 +1,9 @@
 apiVersion: sdc.ibm.com/v1
 kind: IDACluster
 metadata:
-  name: ida-demo
+  name: idadeploy
 spec:
-  prefixName: ida-demo
+  prefixName: idadeploy
 
   idaDatabase:
     type: mysql
@@ -23,5 +23,6 @@ spec:
     imagePullSecrets:
     pvcName: ida-data-pvc
     replicas: 1
+    jvmArgs: "-Dhazelcast.diagnostics.enabled=true -Dhazelcast.kube.service.name=idadeploy-ida-web -Dhazelcast.kube.namespace=<NAMESPACE>"
     waitIDADB:
       image: busybox:1.28

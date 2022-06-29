@@ -13,6 +13,7 @@ function show_help {
     echo "  -h  Display help"
     echo "  -i  IDA image name"
     echo "      For example: registry_url/ida:version"
+    echo "  -n  The namespace to deploy IDA"
     echo "  -t  Optional: Installation type"
     echo "      For example: embedded or external"
     echo "  -d  Optional: Database type, the default is mysql"
@@ -26,13 +27,15 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:t:d:s:" opt; do
+    while getopts "h?i:n:t:d:s:" opt; do
         case "$opt" in
         h|\?)
             show_help
             exit 0
             ;;
         i)  IMAGEREGISTRY=$OPTARG
+            ;;
+        n)  NAMESPACE=$OPTARG
             ;;
         t)  INSTALLTYPE=$OPTARG
             ;;
@@ -89,6 +92,8 @@ echo "Using the IDA image name: $IMAGEREGISTRY"
 cat ./deploycr.yaml | sed -e "s|image: <IDA_IMAGE>|image: \"$IMAGEREGISTRY\" |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
+cat ./deploycr.yaml | sed -e "s|<NAMESPACE>|$NAMESPACE|g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+
 if [ ! -z ${DATABASE} ]; then
 # Change the database type
 echo "Using the Database: $DATABASE"
@@ -102,6 +107,7 @@ cat ./deploycr.yaml | sed -e "s|imagePullSecrets:|imagePullSecrets: $SECRET |g" 
 fi
 
 oc apply -f ./deploycr.yaml
+
 
 echo -e "\033[1;32mDeploying IDA custom resource. \033[0m"
 
@@ -124,14 +130,14 @@ fi
 
 while true; do
     echo -e "\x1B[1mChecking IDA Web Pod Status\x1B[0m"
-    IDA_POD_NAME=$(oc get pod | grep ida-web | awk '{print$1}')
-    IDA_POD_STATUS=$(oc get pod | grep ida-web | awk '{print$3}')
+    IDA_POD_NAME=$(oc get pod | grep ida-web | head -n 1 | awk '{print$1}')
+    IDA_POD_STATUS=$(oc get pod | grep ida-web | head -n 1 | awk '{print$3}')
     echo "The Pod status is $IDA_POD_STATUS"
     if [ "$IDA_POD_STATUS" = "Running" ] ; then
         echo -e "\033[1;32mCopying JDBC drivers. \033[0m"
         oc rsync $JDBC_DRIVER_DIR $IDA_POD_NAME:/var/ida/data/
         echo -e "\033[1;32mRestarting IDA Web Pod. \033[0m"
-        oc delete pod $IDA_POD_NAME
+        oc delete pod $(oc get pod | grep ida-web | awk '{print$1}')
         break;
     else
         echo "Waiting IDA Web Pod Running..."
@@ -141,8 +147,8 @@ done
 
 while true; do
     echo -e "\x1B[1mChecking IDA Web Pod Status\x1B[0m"
-    IDA_POD_NAME=$(oc get pod | grep ida-web | awk '{print$1}')
-    IDA_POD_STATUS=$(oc get pod | grep ida-web | awk '{print$3}')
+    IDA_POD_NAME=$(oc get pod | grep ida-web | head -n 1 | awk '{print$1}')
+    IDA_POD_STATUS=$(oc get pod | grep ida-web | head -n 1 | awk '{print$3}')
     echo "The Pod status is $IDA_POD_STATUS"
     if [ "$IDA_POD_STATUS" = "Running" ] ; then
         break;

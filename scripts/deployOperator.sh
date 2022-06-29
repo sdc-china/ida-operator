@@ -14,6 +14,8 @@ function show_help {
     echo "  -i  Operator image name"
     echo "      For example: registry_url/ida-operator:version"
     echo "  -n  The namespace to deploy Operator"
+    echo "  -s  Optional: Docker secret, the default is empty"
+    echo "      For example: ida-operator-secret"
 }
 
 if [[ $1 == "" ]]
@@ -21,7 +23,7 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:n:" opt; do
+    while getopts "h?i:n:s:" opt; do
         case "$opt" in
         h|\?)
             show_help
@@ -30,6 +32,8 @@ else
         i)  IMAGEREGISTRY=$OPTARG
             ;;
         n)  NAMESPACE=$OPTARG
+            ;;
+        s)  SECRET=$OPTARG
             ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
@@ -52,6 +56,20 @@ if [ ! -z ${IMAGEREGISTRY} ]; then
 echo "Using the operator image name: $IMAGEREGISTRY"
 sed -e "s|image: .*|image: \"$IMAGEREGISTRY\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
 fi
+
+if [ ! -z ${SECRET} ]; then
+# Change the docker secret
+echo "Using the docker secret: $SECRET"
+sed -e "s|name: <IMAGE_PULL_SECRET>|name: \"$SECRET\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+fi
+cat ./deployoperator.yaml
+if [ -z ${SECRET} ]; then
+# Change the docker secret
+echo "Reset the docker secret"
+sed -e "s|imagePullSecrets:| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+sed -e "s|name: <IMAGE_PULL_SECRET>| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+fi
+
 
 oc apply -f ./descriptors/operator-crd.yaml
 oc apply -f ./descriptors/service-account.yaml

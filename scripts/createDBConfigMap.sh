@@ -8,7 +8,7 @@ source ${CUR_DIR}/scripts/helper/common.sh
 JDBC_DRIVER_DIR=${CUR_DIR}/scripts/jdbc
 
 function show_help {
-    echo -e "\nUsage: createSqlsSecret.sh -i ida_image \n"
+    echo -e "\nUsage: createDBConfigMap.sh -i ida_image \n"
     echo "Options:"
     echo "  -h  Display help"
     echo "  -i  IDA image name"
