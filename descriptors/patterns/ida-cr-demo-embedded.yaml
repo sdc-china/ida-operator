@@ -6,10 +6,10 @@ spec:
   prefixName: idadeploy
 
   idaDatabase:
-    type: mysql
+    type: postgres
     internalDatabase:
       enabled: true
-      image: mysql:5.7
+      image: postgres:14.3
       imagePullPolicy: Always
       imagePullSecrets:
       configMapVolume: ida-embedded-db-configmap

@@ -39,7 +39,7 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name>
 
 #For example:
-scripts/deployOperator.sh -i ctesdc/ida-operator:1.0.5 -n ida-operator
+scripts/deployOperator.sh -i ctesdc/ida-operator:22.0.1 -n ida-operator
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -83,7 +83,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #For example:
-scripts/loadImages.sh -p ida-3.1.0.tgz -r $(oc registry info)/ida-demo
+scripts/loadImages.sh -p ida-22.1.3.tgz -r $(oc registry info)/ida-demo
 ```
 
 Step 3. Preparing docker registry secret (Optional)
@@ -117,12 +117,12 @@ scripts/createDBConfigMap.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
-scripts/createDBConfigMap.sh -i $(oc registry info)/ida-demo/ida:3.1.0
+scripts/createDBConfigMap.sh -i $(oc registry info)/ida-demo/ida:22.1.3
 ```
 
 - Using External Database
 
-  Step 1. Configuring your database, please refer to [Database Installation and Configuration](https://sdc-china.github.io/IDA-doc/installation/installation-db.html#install-and-configure-mysql-db).
+  Step 1. Configuring your database, please refer to [Database Installation and Configuration](https://sdc-china.github.io/IDA-doc/installation/installation-db.html#install-and-configure-postgres-db).
 
   Step 2. Creating a database credentials.
 
@@ -136,10 +136,10 @@ scripts/createDBConfigMap.sh -i $(oc registry info)/ida-demo/ida:3.1.0
 
   #For example:
   oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=localshot \
-  --from-literal=DATABASE_NAME=keterweb \
-  --from-literal=DATABASE_PORT_NUMBER=3306 \
-  --from-literal=DATABASE_USER=root \
-  --from-literal=DATABASE_PASSWORD=mysqladmin
+  --from-literal=DATABASE_NAME=idaweb \
+  --from-literal=DATABASE_PORT_NUMBER=5432 \
+  --from-literal=DATABASE_USER=postgres \
+  --from-literal=DATABASE_PASSWORD=password
   ```
 
 ### Installing IDA Instance
@@ -148,13 +148,13 @@ Step 1. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image>
+scripts/deployIDA.sh -i <ida_image> -n <ida_project_name>
 
 #Example of using openshift internal docker registry:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:3.1.0
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:22.1.3
 
 #Example of using external docker registry:
-scripts/deployIDA.sh -i <docker_registry>/ida:3.1.0 -s ida-docker-secret
+scripts/deployIDA.sh -i <docker_registry>/ida:22.1.3 -s ida-docker-secret
 ```
 
 If success, you will see the log from your console

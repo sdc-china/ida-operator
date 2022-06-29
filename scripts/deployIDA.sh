@@ -16,8 +16,8 @@ function show_help {
     echo "  -n  The namespace to deploy IDA"
     echo "  -t  Optional: Installation type"
     echo "      For example: embedded or external"
-    echo "  -d  Optional: Database type, the default is mysql"
-    echo "      For example: mysql, db2 or oracle"
+    echo "  -d  Optional: Database type, the default is postgres"
+    echo "      For example: postgres, mysql, db2 or oracle"
     echo "  -s  Optional: Docker secret, the default is empty"
     echo "      For example: ida-docker-secret"
 }
@@ -97,7 +97,7 @@ cat ./deploycr.yaml | sed -e "s|<NAMESPACE>|$NAMESPACE|g" > ./deploycrsav.yaml ;
 if [ ! -z ${DATABASE} ]; then
 # Change the database type
 echo "Using the Database: $DATABASE"
-cat ./deploycr.yaml | sed -e "s|type: mysql|type: $DATABASE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+cat ./deploycr.yaml | sed -e "s|type: postgres|type: $DATABASE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${SECRET} ]; then

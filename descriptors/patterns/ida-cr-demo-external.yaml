@@ -6,7 +6,7 @@ spec:
   prefixName: idadeploy
 
   idaDatabase:
-    type: mysql
+    type: postgres
     internalDatabase:
       enabled: false
     externalDatabase:

@@ -65,6 +65,6 @@ fi
 
 rm -rf tmp && mkdir tmp && chown 1001:0 tmp
 ${cli_cmd} run -v $(pwd)/tmp:/data --rm $IMAGEREGISTRY cp -r /opt/ol/wlp/sqls /data
-oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/mysql/2-data-mysql.sql --from-file=./tmp/sqls/mysql/1-schema-mysql.sql
+oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql
 
 echo -e "\033[32mThe Secret have been successfully created.\033[0m"
