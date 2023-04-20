@@ -10,11 +10,20 @@ Step 1. Log in to your cluster
 oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 ```
 
-Step 2. Log in to your docker registry
+Step 2. Expose OCP internal registy (Optional)
+
+If you are using OCP default internal docker registry, please expose the registry manually
+
+```
+oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+REGISTRY_HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
+``` 
+
+Step 3. Log in to your docker registry
 
 ```
 #Using the Podman CLI:
-podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $(oc registry info)
+podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $REGISTRY_HOST
 ```
 
 ## IDA Operator
@@ -32,17 +41,23 @@ oc project <operator_project_name>
 oc project ida-operator
 ```
 
-Step 2. Deploy IDA operator to your cluster.
+Step 2. Preparing docker hub registry secret (Optional)
+The ida-operator image is published in Docker Hub. You may need to create the docker hub pull secret.
+```
+oc create secret docker-registry ida-operator-secret --docker-server=docker.io --docker-username=<docker_username> --docker-password=<docker_password>
+```
+
+Step 3. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
-scripts/deployOperator.sh -i <operator_image> -n <operator_project_name>
+scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <pull-secret>
 
 #For example:
-scripts/deployOperator.sh -i ctesdc/ida-operator:22.0.1 -n ida-operator
+scripts/deployOperator.sh -i ctesdc/ida-operator:22.0.1 -n ida-operator -s ida-operator-secret
 ```
 
-Step 3. Monitor the pod until it shows a STATUS of "Running":
+Step 4. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w
@@ -83,7 +98,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #For example:
-scripts/loadImages.sh -p ida-22.1.3.tgz -r $(oc registry info)/ida-demo
+scripts/loadImages.sh -p ida-23.0.2.tgz -r $REGISTRY_HOST/ida-demo
 ```
 
 Step 3. Preparing docker registry secret (Optional)
@@ -117,7 +132,7 @@ scripts/createDBConfigMap.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
-scripts/createDBConfigMap.sh -i $(oc registry info)/ida-demo/ida:22.1.3
+scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.2
 ```
 
 - Using External Database
@@ -151,15 +166,15 @@ chmod +x scripts/deployIDA.sh
 scripts/deployIDA.sh -i <ida_image> -n <ida_project_name>
 
 #Example of using openshift internal docker registry:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:22.1.3
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.2
 
 #Example of using external docker registry:
-scripts/deployIDA.sh -i <docker_registry>/ida:22.1.3 -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.2 -s ida-docker-secret
 ```
 
 If success, you will see the log from your console
 ```
-Success! You could visit IDA by the url "https://<HOST>/ida"
+Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
 ```
 
 Step 2. Monitor the pod until it shows a STATUS of "Running":
