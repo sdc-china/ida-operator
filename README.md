@@ -121,7 +121,7 @@ scripts/createDataPVC.sh -s managed-nfs-storage
 
 Step 5. Preparing Database.
 
-- Using Embedded Database (For Demo Purpose)
+- Using Embedded Database (For Demo Purpose, deleting ida operator instance will also remove the embedded db)
 
 Create an ida-db-pvc and ida-embedded-db-configmap for IDA custom resource.
 
