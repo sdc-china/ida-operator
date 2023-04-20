@@ -121,7 +121,7 @@ scripts/createDataPVC.sh -s managed-nfs-storage
 
 Step 5. Preparing Database.
 
-- Using Embedded Database
+- Using Embedded Database (For Demo Purpose)
 
 Create an ida-db-pvc and ida-embedded-db-configmap for IDA custom resource.
 
@@ -137,7 +137,7 @@ scripts/createDBPVC.sh -s managed-nfs-storage
 scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.2
 ```
 
-- Using External Database
+- Using External Database (For Product Purpose)
 
   Step 1. Configuring your database, please refer to [Database Installation and Configuration](https://sdc-china.github.io/IDA-doc/installation/installation-db.html#install-and-configure-postgres-db).
 
