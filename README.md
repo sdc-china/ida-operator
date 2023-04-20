@@ -194,5 +194,5 @@ oc logs -f deployment/ida-demo-ida-web
 ### Uninstall IDA Instance
 
 ```
-oc delete IDACluster ida-demo
+oc delete IDACluster idadeploy
 ```
