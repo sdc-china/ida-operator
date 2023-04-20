@@ -103,6 +103,7 @@ scripts/loadImages.sh -p ida-23.0.2.tgz -r $REGISTRY_HOST/ida-demo
 ```
 
 Step 3. Preparing docker registry secret (Optional)
+
 If you are using external docker registry, then you may need to create the docker pull secret.
 ```
 oc create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
