@@ -42,6 +42,7 @@ oc project ida-operator
 ```
 
 Step 2. Preparing docker hub registry secret (Optional)
+
 The ida-operator image is published in Docker Hub. You may need to create the docker hub pull secret.
 ```
 oc create secret docker-registry ida-operator-secret --docker-server=docker.io --docker-username=<docker_username> --docker-password=<docker_password>
