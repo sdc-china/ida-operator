@@ -25,8 +25,8 @@ oc create configmap pg-db-configmap --from-file=2-data-postgres.sql --from-file=
 ## Create database deployment
 
 Edit **pg-db.yaml**.
-- Modify the storageClassName of pg-db-pvc
-- Modify the environment variables POSTGRES_USER and POSTGRES_PASSWORD of pg-db deployment
+- Modify the **storageClassName** of **pg-db-pvc**
+- Modify the environment variables **POSTGRES_USER** and **POSTGRES_PASSWORD** of **pg-db** deployment
 
 ```
 oc apply -f pg-db.yaml
