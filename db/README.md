@@ -35,7 +35,7 @@ oc apply -f pg-db.yaml
 ## Access database by adminer router
 
 ```
-oc get route adminer
+echo "http://$(oc get route | grep adminer | awk '{print$2}')"
 ```
 
 ## Example of db secret for ida

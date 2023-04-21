@@ -164,4 +164,4 @@ if [ "$IDA_ROUTE_NAME" = "" ] ; then
   oc create route passthrough --service $(oc get svc | grep ida-web | awk '{print$1}')
 fi
 
-echo -e "\033[1;32mSuccess! You could visit IDA by the url: https://$(oc get route | grep ida-web | awk '{print$2}')/ida \033[0m"
+echo "Success! You could visit IDA by the url: https://$(oc get route | grep ida-web | awk '{print$2}')/ida"

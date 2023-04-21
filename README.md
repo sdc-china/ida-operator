@@ -192,6 +192,12 @@ oc get pods -w
 oc logs -f deployment/idadeploy-ida-web
 ```
 
+### IDA Access URL
+
+```
+echo "https://$(oc get route | grep ida-web | awk '{print$2}')/ida"
+```
+
 ### Uninstall IDA Instance
 
 ```
