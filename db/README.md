@@ -12,7 +12,7 @@ oc new-project ida-db
 oc create secret docker-registry docker-hub-secret --docker-server=docker.io --docker-username=<docker_username> --docker-password=<docker_password>
 ```
 
-## Create database config map
+## Create database configmap
 
 Get **schema-postgres.sql** and **data-postgres.sql** from IDA release package.
 
