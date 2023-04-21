@@ -190,7 +190,7 @@ oc get pods -w
 **Notes:** When started, you can monitor the IDA logs with the following command:
 
 ```
-oc logs -f deployment/ida-demo-ida-web
+oc logs -f deployment/idadeploy-ida-web
 ```
 
 ### Uninstall IDA Instance
