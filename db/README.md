@@ -37,3 +37,13 @@ oc apply -f pg-db.yaml
 ```
 oc get route adminer
 ```
+
+## Example of db secret for ida
+
+```
+oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=db.ida-db.svc.cluster.local \
+--from-literal=DATABASE_NAME=idaweb \
+--from-literal=DATABASE_PORT_NUMBER=5432 \
+--from-literal=DATABASE_USER=postgres \
+--from-literal=DATABASE_PASSWORD=password
+```
