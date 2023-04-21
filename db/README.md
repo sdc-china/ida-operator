@@ -32,7 +32,7 @@ Edit **pg-db.yaml**.
 oc apply -f pg-db.yaml
 ```
 
-## Access database by adminer router
+## Access database by Adminer
 
 ```
 echo "http://$(oc get route | grep adminer | awk '{print$2}')"
