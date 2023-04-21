@@ -139,7 +139,9 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.2
 
 - Using External Database (For Product Purpose)
 
-  Step 1. Configuring your database, please refer to [Database Installation and Configuration](https://sdc-china.github.io/IDA-doc/installation/installation-database-installation-and-configuration.html).
+  Step 1. Configuring your database by either of the two ways.
+  - [Create on-prem database](https://sdc-china.github.io/IDA-doc/installation/installation-database-installation-and-configuration.html).
+  - [Create on-container postgresql database](db/README.md)
 
   Step 2. Creating a database credentials.
 
