@@ -146,7 +146,6 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.2
   Step 2. Creating a database credentials.
 
   ```
-  # If you change the secret name, please update the 'idaDatabase.externalDatabase.secretCredentials' value in ./ida/ida.yaml
   oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=<DATABASE_SERVER> \
   --from-literal=DATABASE_NAME=<DATABASE_NAME> \
   --from-literal=DATABASE_PORT_NUMBER=<DATABASE_PORT> \
