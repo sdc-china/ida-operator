@@ -166,16 +166,16 @@ Step 1. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -t <installation_type> -d <database_type> -s <docker_secret>
+scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -t <installation_type> -d <database_type> -s <docker_pull_secret>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h
 
 #Example of using openshift internal docker registry and embedded database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.2 -n ida-demo -t embedded -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.2 -n ida-demo -t embedded -d postgres
 
 #Example of using external docker registry and external database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.2 -s ida-docker-secret -n ida-demo -t external -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.2 -n ida-demo -t external -d postgres -s ida-docker-secret
 ```
 
 If success, you will see the log from your console
