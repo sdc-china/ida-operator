@@ -18,7 +18,7 @@ function show_help {
     echo "      For example: embedded or external"
     echo "  -d  Optional: Database type, the default is postgres"
     echo "      For example: postgres, mysql, db2 or oracle"
-    echo "  -s  Optional: Docker secret, the default is empty"
+    echo "  -s  Optional: Image pull secret, the default is empty"
     echo "      For example: ida-docker-secret"
 }
 

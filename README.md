@@ -52,7 +52,7 @@ Step 3. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
-scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <pull-secret>
+scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <image_pull_secret>
 
 #For example:
 scripts/deployOperator.sh -i ctesdc/ida-operator:22.0.1 -n ida-operator -s ida-operator-secret
@@ -166,7 +166,7 @@ Step 1. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -t <installation_type> -d <database_type> -s <docker_pull_secret>
+scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -t <installation_type> -d <database_type> -s <image_pull_secret>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h

@@ -14,7 +14,7 @@ function show_help {
     echo "  -i  Operator image name"
     echo "      For example: registry_url/ida-operator:version"
     echo "  -n  The namespace to deploy Operator"
-    echo "  -s  Optional: Docker pull secret, the default is empty"
+    echo "  -s  Optional: Image pull secret, the default is empty"
     echo "      For example: ida-operator-secret"
 }
 
