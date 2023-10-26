@@ -85,6 +85,11 @@ then
     cp ./descriptors/patterns/ida-cr-demo-external.yaml ./deploycr.yaml
 fi
 
+[ -f ./hazelcast-rbac.yaml ] && rm ./hazelcast-rbac.yaml
+cp ./descriptors/hazelcast-rbac.yaml ./hazelcast-rbac.yaml
+
+cat ./hazelcast-rbac.yaml | sed -e "s|<NAMESPACE>|$NAMESPACE|g" > ./hazelcast-rbac_temp.yaml ;  mv ./hazelcast-rbac_temp.yaml ./hazelcast-rbac.yaml
+
 
 if [ ! -z ${IMAGEREGISTRY} ]; then
 # Change the location of the image
@@ -106,6 +111,7 @@ echo "Using the docker secret: $SECRET"
 cat ./deploycr.yaml | sed -e "s|imagePullSecrets:|imagePullSecrets: $SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
+oc apply -f ./hazelcast-rbac.yaml
 oc apply -f ./deploycr.yaml
 
 

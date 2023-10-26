@@ -8,7 +8,7 @@ source ${CUR_DIR}/scripts/helper/common.sh
 check_platform_version
 
 function show_help {
-    echo -e "\nUsage: deployPVC.sh -s storage_class_name \n"
+    echo -e "\nUsage: createDataPVC.sh -s storage_class_name \n"
     echo "Options:"
     echo "  -h  Display help"
     echo "  -s  Storage class name"

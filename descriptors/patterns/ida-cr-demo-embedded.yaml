@@ -7,14 +7,14 @@ spec:
 
   idaDatabase:
     type: postgres
-    internalDatabase:
+    internal:
       enabled: true
       image: postgres:14.3
       imagePullPolicy: Always
       imagePullSecrets:
       configMapVolume: ida-embedded-db-configmap
       existingPVCName: ida-db-pvc
-    externalDatabase:
+    external:
       enabled: false
 
   idaWeb:
@@ -23,6 +23,5 @@ spec:
     imagePullSecrets:
     pvcName: ida-data-pvc
     replicas: 1
-    jvmArgs: "-Dhazelcast.diagnostics.enabled=true -Dhazelcast.kube.service.name=idadeploy-ida-web -Dhazelcast.kube.namespace=<NAMESPACE>"
     waitIDADB:
       image: busybox:1.28

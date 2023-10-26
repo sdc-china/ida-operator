@@ -7,9 +7,9 @@ spec:
 
   idaDatabase:
     type: postgres
-    internalDatabase:
+    internal:
       enabled: false
-    externalDatabase:
+    external:
       enabled: true
       secretCredentials: ida-external-db-secret
 
@@ -19,6 +19,5 @@ spec:
     imagePullSecrets:
     pvcName: ida-data-pvc
     replicas: 1
-    jvmArgs: "-Dhazelcast.diagnostics.enabled=true -Dhazelcast.kube.service.name=idadeploy-ida-web -Dhazelcast.kube.namespace=<NAMESPACE>"
     waitIDADB:
       image: busybox:1.28
