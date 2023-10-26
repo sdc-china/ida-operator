@@ -45,5 +45,6 @@ oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_N
 --from-literal=DATABASE_NAME=idaweb \
 --from-literal=DATABASE_PORT_NUMBER=5432 \
 --from-literal=DATABASE_USER=postgres \
---from-literal=DATABASE_PASSWORD=password
+--from-literal=DATABASE_PASSWORD=password \
+--from-literal=DATABASE_MAX_POOL_SIZE=50
 ```

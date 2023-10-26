@@ -26,6 +26,15 @@ Step 3. Log in to your docker registry
 podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $REGISTRY_HOST
 ```
 
+Step 4. Download IDA operator scripts
+
+```
+git clone git@github.com:sdc-china/ida-operator.git
+cd ida-operator
+```
+
+Step 5. Download IDA release package
+
 ## IDA Operator
 
 IDA operator watches all namespaces. You only need to install the Operator in one namespace.
@@ -92,15 +101,17 @@ oc project ida-demo
 
 Step 2. Load and push ida image to your docker registry.
 
-Path to ida-operator **ROOT Folder**
+Go to **ida-operator** folder, and load the ida image.
 
 ```
 chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #For example:
-scripts/loadImages.sh -p ida-23.0.3.tgz -r $REGISTRY_HOST/ida-demo
+scripts/loadImages.sh -p ida-23.0.9.tgz -r $REGISTRY_HOST/ida-demo
 ```
+**Notes:** 
+ida-<version>.tgz is provided in the IDA release package.
 
 Step 3. Preparing docker registry secret (Optional)
 
@@ -134,7 +145,7 @@ scripts/createDBConfigMap.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
-scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.3
+scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.9
 ```
 
 - Using External Database (For Product Purpose)
@@ -150,14 +161,16 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.3
   --from-literal=DATABASE_NAME=<DATABASE_NAME> \
   --from-literal=DATABASE_PORT_NUMBER=<DATABASE_PORT> \
   --from-literal=DATABASE_USER=<DATABASE_USER> \
-  --from-literal=DATABASE_PASSWORD=<DATABASE_PASSWORD>
+  --from-literal=DATABASE_PASSWORD=<DATABASE_PASSWORD> \
+  --from-literal=DATABASE_MAX_POOL_SIZE=<DATABASE_MAX_POOL_SIZE>
 
   #For example:
   oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=localshot \
   --from-literal=DATABASE_NAME=idaweb \
   --from-literal=DATABASE_PORT_NUMBER=5432 \
   --from-literal=DATABASE_USER=postgres \
-  --from-literal=DATABASE_PASSWORD=password
+  --from-literal=DATABASE_PASSWORD=password \
+  --from-literal=DATABASE_MAX_POOL_SIZE=50
   ```
 
 ### Installing IDA Instance
@@ -172,10 +185,10 @@ scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -t <installation_type>
 scripts/deployIDA.sh -h
 
 #Example of using openshift internal docker registry and embedded database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.3 -n ida-demo -t embedded -d postgres
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.9 -n ida-demo -t embedded -d postgres
 
 #Example of using external docker registry and external database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.3 -n ida-demo -t external -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.9 -n ida-demo -t external -d postgres -s ida-docker-secret
 ```
 
 If success, you will see the log from your console
