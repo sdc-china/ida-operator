@@ -64,7 +64,7 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <image_pull_secret>
 
 #For example:
-scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.1 -n ida-operator -s ida-operator-secret
+scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.2 -n ida-operator -s ida-operator-secret
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
