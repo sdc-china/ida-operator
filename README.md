@@ -64,7 +64,7 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <image_pull_secret>
 
 #For example:
-scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.1 -n ida-operator -s ida-operator-secret
+scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.2 -n ida-operator -s ida-operator-secret
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -179,16 +179,16 @@ Step 1. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -t <installation_type> -d <database_type> -s <image_pull_secret>
+scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h
 
 #Example of using openshift internal docker registry and embedded database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.9 -n ida-demo -t embedded -d postgres
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.9 -n ida-demo -r 1 -t embedded -d postgres
 
 #Example of using external docker registry and external database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.9 -n ida-demo -t external -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.9 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
 ```
 
 If success, you will see the log from your console

@@ -14,6 +14,8 @@ function show_help {
     echo "  -i  IDA image name"
     echo "      For example: registry_url/ida:version"
     echo "  -n  The namespace to deploy IDA"
+    echo "  -r  Optional: IDA replicas number"
+    echo "      Defualt value is 1"
     echo "  -t  Optional: Installation type"
     echo "      For example: embedded or external"
     echo "  -d  Optional: Database type, the default is postgres"
@@ -27,7 +29,7 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:n:t:d:s:" opt; do
+    while getopts "h?i:n:r:t:d:s:" opt; do
         case "$opt" in
         h|\?)
             show_help
@@ -37,7 +39,9 @@ else
             ;;
         n)  NAMESPACE=$OPTARG
             ;;
-        t)  INSTALLTYPE=$OPTARG
+        r)  REPLICAS=$OPTARG
+            ;;
+        t)  INSTALLATION_TYPE=$OPTARG
             ;;
         d)  DATABASE=$OPTARG
             ;;
@@ -111,6 +115,12 @@ echo "Using the docker secret: $SECRET"
 cat ./deploycr.yaml | sed -e "s|imagePullSecrets:|imagePullSecrets: $SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
+if [ ! -z ${REPLICAS} ]; then
+# Change replicas number
+echo "Set replicas to $REPLICAS"
+cat ./deploycr.yaml | sed -e "s|replicas: 1|replicas: $REPLICAS |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
 oc apply -f ./hazelcast-rbac.yaml
 oc apply -f ./deploycr.yaml
 
@@ -119,16 +129,14 @@ echo -e "\033[1;32mDeploying IDA custom resource. \033[0m"
 
 
 if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
-    # wait DB POD running
+    # wait DB POD ready
     while true; do
-        echo -e "\x1B[1mChecking IDA Embedded DB Pod Status\x1B[0m"
         IDA_POD_NAME=$(oc get pod | grep ida-db | awk '{print$1}')
-        IDA_POD_STATUS=$(oc get pod | grep ida-db | awk '{print$3}')
-        echo "The Embedded DB Pod status is $IDA_POD_STATUS"
-        if [ "$IDA_POD_STATUS" = "Running" ] ; then
+        IDA_POD_READY=$(oc get pods $IDA_POD_NAME -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' | awk '{print$1}')
+        if [ "$IDA_POD_READY" = "True" ] ; then
             break;
         else
-            echo "Waiting IDA Embedded DB Pod Running..."
+            echo "Waiting IDA Embedded DB Pod Ready..."
             sleep 10
         fi
     done
@@ -151,17 +159,10 @@ while true; do
     fi
 done
 
-while true; do
-    echo -e "\x1B[1mChecking IDA Web Pod Status\x1B[0m"
-    IDA_POD_NAME=$(oc get pod | grep ida-web | head -n 1 | awk '{print$1}')
-    IDA_POD_STATUS=$(oc get pod | grep ida-web | head -n 1 | awk '{print$3}')
-    echo "The Pod status is $IDA_POD_STATUS"
-    if [ "$IDA_POD_STATUS" = "Running" ] ; then
-        break;
-    else
-        echo "Waiting IDA Web Pod Running..."
-        sleep 10
-    fi
+IDA_DEPLOYMENT_NAME=$(oc get deployment | grep ida-web | head -n 1 | awk '{print$1}')
+ROLLOUT_STATUS_CMD="oc rollout status deployment/$IDA_DEPLOYMENT_NAME"
+until $ROLLOUT_STATUS_CMD; do
+  $ROLLOUT_STATUS_CMD
 done
 
 IDA_ROUTE_NAME=$(oc get route | grep ida-web | awk '{print$1}')
