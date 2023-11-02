@@ -19,5 +19,6 @@ spec:
     imagePullSecrets:
     pvcName: ida-data-pvc
     replicas: 1
+    tlsCert:
     waitIDADB:
       image: busybox:1.28
