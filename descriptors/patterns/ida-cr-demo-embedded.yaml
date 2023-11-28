@@ -12,7 +12,6 @@ spec:
       image: postgres:14.3
       imagePullPolicy: Always
       imagePullSecrets:
-      configMapVolume: ida-embedded-db-configmap
       existingPVCName: ida-db-pvc
     external:
       enabled: false
@@ -23,5 +22,6 @@ spec:
     imagePullSecrets:
     pvcName: ida-data-pvc
     replicas: 1
+    tlsCert:
     waitIDADB:
       image: busybox:1.28

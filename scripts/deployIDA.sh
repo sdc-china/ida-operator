@@ -22,6 +22,8 @@ function show_help {
     echo "      For example: postgres, mysql, db2 or oracle"
     echo "  -s  Optional: Image pull secret, the default is empty"
     echo "      For example: ida-docker-secret"
+    echo "  -c  Optional: Custom Liberty SSL certificate path, the default is empty"
+    echo "      For example: /root/ida-operator/libertykeystore.p12"
 }
 
 if [[ $1 == "" ]]
@@ -29,7 +31,7 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:n:r:t:d:s:" opt; do
+    while getopts "h?i:n:r:t:d:s:c:" opt; do
         case "$opt" in
         h|\?)
             show_help
@@ -46,6 +48,8 @@ else
         d)  DATABASE=$OPTARG
             ;;
         s)  SECRET=$OPTARG
+            ;;
+        c)  CERT_PATH=$OPTARG
             ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
@@ -119,6 +123,13 @@ if [ ! -z ${REPLICAS} ]; then
 # Change replicas number
 echo "Set replicas to $REPLICAS"
 cat ./deploycr.yaml | sed -e "s|replicas: 1|replicas: $REPLICAS |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${CERT_PATH} ]; then
+# Change Liberty SSL certificate
+echo "Custom Liberty SSL Certificate path: $CERT_PATH"
+CERT_ENCODED=$(base64 -w 0 $CERT_PATH)
+cat ./deploycr.yaml | sed -e "s|tlsCert:|tlsCert: $CERT_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 oc apply -f ./hazelcast-rbac.yaml
