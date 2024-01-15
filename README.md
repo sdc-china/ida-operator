@@ -108,7 +108,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #For example:
-scripts/loadImages.sh -p ida-23.0.9.tgz -r $REGISTRY_HOST/ida-demo
+scripts/loadImages.sh -p ida-23.0.11.tgz -r $REGISTRY_HOST/ida-demo
 ```
 **Notes:** 
 ida-<version>.tgz is provided in the IDA release package.
@@ -145,7 +145,7 @@ scripts/createDBConfigMap.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
-scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.9
+scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
 ```
 
 - Using External Database (For Product Purpose)
@@ -185,10 +185,10 @@ scripts/deployIDA.sh -i <ida_image> -n <ida_project_name> -r <replicas_number> -
 scripts/deployIDA.sh -h
 
 #Example of using openshift internal docker registry and embedded database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.9 -n ida-demo -r 1 -t embedded -d postgres
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11 -n ida-demo -r 1 -t embedded -d postgres
 
 #Example of using external docker registry and external database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.9 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.11 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
 ```
 
 If success, you will see the log from your console
