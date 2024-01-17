@@ -136,7 +136,7 @@ scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 scripts/loadImages.sh -p ida-23.0.11.tgz -r $REGISTRY_HOST/ida-demo
 ```
 **Notes:** 
-ida-<version>.tgz is provided in the IDA release package.
+ida-\<version\>.tgz is provided in the IDA release package.
 
 Step 3. Preparing docker registry secret (Optional)
 
