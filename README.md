@@ -50,12 +50,37 @@ oc project <operator_project_name>
 oc project ida-operator
 ```
 
-Step 2. Preparing docker hub registry secret (Optional)
+Step 2. Preparing IDA Operator Image
 
-The ida-operator image is published in Docker Hub. You may need to create the docker hub pull secret.
-```
-oc create secret docker-registry ida-operator-secret --docker-server=docker.io --docker-username=<docker_username> --docker-password=<docker_password>
-```
+- **If your cluster is connected to the internet**
+
+  The ida-operator image is published in Docker Hub. You may need to create the docker hub pull secret.
+  ```
+  oc create secret docker-registry ida-operator-secret --docker-server=docker.io --   docker-username=<docker_username> --docker-password=<docker_password>
+  ```
+
+- **If your cluster is NOT connected to the internet**
+
+  You can get the IDA operator image from the IDA release package or Docker Hub, then push it to your private registry.
+
+    - **From IDA release package**
+
+    ida-operator-23.0.3.tgz is provided in the IDA release package.
+
+    ```
+    tar -zxvf ida-operator-23.0.3.tgz
+    docker load --input images/ida-operator-23.0.3.tar.gz
+    docker tag ctesdc/ida-operator:23.0.3 <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    docker push <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    ```
+
+    - **From Docker Hub**
+
+    ```
+    docker pull ctesdc/ida-operator:23.0.3
+    docker tag ctesdc/ida-operator:23.0.3 <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    docker push <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    ```
 
 Step 3. Deploy IDA operator to your cluster.
 
