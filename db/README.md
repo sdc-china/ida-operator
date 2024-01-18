@@ -32,9 +32,9 @@ Edit **pg-db.yaml**.
   ```
 - Modify the environment variables **POSTGRES_USER** and **POSTGRES_PASSWORD** of **pg-db** deployment
 
-```
-oc apply -f pg-db.yaml
-```
+  ```
+  oc apply -f pg-db.yaml
+  ```
 
 ## Access database by Adminer
 
