@@ -47,6 +47,7 @@ Step 1. Go to the project that you want to install IDA Operator.
 oc project <operator_project_name>
 
 #For example:
+oc new-project ida-operator
 oc project ida-operator
 ```
 
