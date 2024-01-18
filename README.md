@@ -111,6 +111,7 @@ Step 1. Go to the project that you want to install IDA Instance.
 oc project <ida_project_name>
 
 #For example:
+oc new-project ida-demo
 oc project ida-demo
 ```
 
