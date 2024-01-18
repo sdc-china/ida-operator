@@ -189,7 +189,16 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
 
 ### Installing IDA Instance
 
-Step 1. Deploying an IDA Instance.
+Step 1. Go to the project that you want to install IDA Instance.
+
+```
+oc project <ida_project_name>
+
+#For example:
+oc project ida-demo
+```
+
+Step 2. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
@@ -210,7 +219,7 @@ If success, you will see the log from your console
 Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
 ```
 
-Step 2. Monitor the pod until it shows a STATUS of "Running":
+Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w
