@@ -90,6 +90,7 @@ scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <ima
 
 #For example:
 scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
+scripts/deployOperator.sh -i <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
