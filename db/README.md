@@ -27,7 +27,7 @@ oc create configmap pg-db-configmap --from-file=2-data-postgres.sql --from-file=
 Edit **pg-db.yaml**.
 - Modify the **storageClassName** of **pg-db-pvc**
   ```
-  #Get the storage class name of your cluster
+  # Get the storage class name of your cluster
   oc get sc
   ```
 - Modify the environment variables **POSTGRES_USER** and **POSTGRES_PASSWORD** of **pg-db** deployment
