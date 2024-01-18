@@ -180,13 +180,15 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
   --from-literal=DATABASE_PASSWORD=<DATABASE_PASSWORD> \
   --from-literal=DATABASE_MAX_POOL_SIZE=<DATABASE_MAX_POOL_SIZE>
 
-  #For example:
-  oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=localshot \
+  #Example of On-premise DB:
+  oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=localhost \
   --from-literal=DATABASE_NAME=idaweb \
   --from-literal=DATABASE_PORT_NUMBER=5432 \
   --from-literal=DATABASE_USER=postgres \
   --from-literal=DATABASE_PASSWORD=password \
   --from-literal=DATABASE_MAX_POOL_SIZE=50
+  
+  #Example of DB on OpenShift:
   oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=db.ida-db.svc.cluster.local \
   --from-literal=DATABASE_NAME=idaweb \
   --from-literal=DATABASE_PORT_NUMBER=5432 \
@@ -220,6 +222,9 @@ scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-dem
 
 #Example of using external docker registry and external database:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.11 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
+
+#Example of using openshift internal docker registry and external database:
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11 -n ida-demo -r 1 -t external -d postgres
 ```
 
 If success, you will see the log from your console
