@@ -67,7 +67,7 @@ Step 2. Preparing IDA Operator Image
     ```
     tar -zxvf ida-operator-23.0.3.tgz
     docker load --input images/ida-operator-23.0.3.tar.gz
-    docker tag ctesdc/ida-operator:23.0.3 <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    docker tag ida-operator:23.0.3 <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
     docker push <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
     ```
 
