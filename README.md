@@ -187,6 +187,12 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
   --from-literal=DATABASE_USER=postgres \
   --from-literal=DATABASE_PASSWORD=password \
   --from-literal=DATABASE_MAX_POOL_SIZE=50
+  oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=db.ida-db.svc.cluster.local \
+  --from-literal=DATABASE_NAME=idaweb \
+  --from-literal=DATABASE_PORT_NUMBER=5432 \
+  --from-literal=DATABASE_USER=postgres \
+  --from-literal=DATABASE_PASSWORD=password \
+  --from-literal=DATABASE_MAX_POOL_SIZE=50
   ```
 
 ### Installing IDA Instance
