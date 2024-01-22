@@ -65,10 +65,12 @@ Step 2. Preparing IDA Operator Image
   You can get the IDA operator image from the IDA release package, then push it to your private registry.
 
     ```
-    tar -zxvf ida-operator-23.0.3.tgz
-    docker load --input images/ida-operator-23.0.3.tar.gz
-    docker tag ida-operator:23.0.3 <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
-    docker push <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    chmod +x scripts/loadImages.sh
+    scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
+    
+    #For example:
+    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ctesdc
+    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r <YOUR_PRIVATE_REGISTRY_URL>/ctesdc
     ```
 
 Step 3. Deploy IDA operator to your cluster.
@@ -79,6 +81,7 @@ scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <ima
 
 #For example:
 scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
+scripts/deployOperator.sh -i <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3 -n ida-operator
 scripts/deployOperator.sh -i <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
 ```
 
@@ -100,6 +103,39 @@ oc logs -f deployment/ida-operator
 chmod +x scripts/deleteOperator.sh
 scripts/deleteOperator.sh
 ```
+
+### Upgrade IDA Operator.
+
+Step 1. Switch to the IDA Operator project.
+
+```
+oc project <operator_project_name>
+
+#For example:
+oc project ida-operator
+```
+
+Step 2. Preparing new IDA Operator Image
+
+Follow the Step 2 of **Installing IDA Operator** to prepare the new IDA Operator Image.
+
+Step 3. Upgrade IDA operator.
+
+```
+chmod +x scripts/upgradeOperator.sh
+scripts/upgradeOperator.sh -i <operator_image>
+
+#For example:
+scripts/upgradeOperator.sh -i ctesdc/ida-operator:23.0.3
+scripts/upgradeOperator.sh -i <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+```
+
+Step 4. Monitor the pod until it shows a STATUS of "Running":
+
+```
+oc get pods -w
+```
+
 
 ## IDA Instance
 
@@ -142,6 +178,9 @@ Step 4. Preparing the IDA storage.
 chmod +x scripts/createDataPVC.sh
 scripts/createDataPVC.sh -s <storage_class>
 
+# Get the storage class name of your cluster
+oc get sc
+
 #For example:
 scripts/createDataPVC.sh -s managed-nfs-storage
 ```
@@ -173,6 +212,9 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
   Step 2. Creating a database credentials.
 
   ```
+  #Switch to your IDA Instance project:
+  oc project <ida_project_name>
+
   oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=<DATABASE_SERVER> \
   --from-literal=DATABASE_NAME=<DATABASE_NAME> \
   --from-literal=DATABASE_PORT_NUMBER=<DATABASE_PORT> \
@@ -255,3 +297,34 @@ echo "https://$(oc get route | grep ida-web | awk '{print$2}')/ida"
 ```
 oc delete IDACluster idadeploy
 ```
+
+### Upgrade IDA Instance.
+
+Step 1. Prerequisite.
+
+If there are database changes for the new IDA version, please execute the corresponding migration scripts before upgrade.
+
+Step 2. Switch to the IDA Instance project.
+
+```
+oc project <ida_project_name>
+
+#For example:
+oc project ida-demo
+```
+
+Step 3. Preparing new IDA Image
+
+Follow the Step 2 of **Preparing to install IDA Instance** to prepare the new IDA Image.
+
+Step 4. Upgrade IDA Instance.
+
+```
+chmod +x scripts/upgradeIDA.sh
+scripts/upgradeIDA.sh -i <ida_image>
+
+#For example:
+scripts/upgradeIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11
+scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida:23.0.11
+```
+
