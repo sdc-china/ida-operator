@@ -23,7 +23,12 @@ Step 3. Log in to your docker registry
 
 ```
 #Using the Podman CLI:
+#Example of using openshift internal docker registry:
 podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $REGISTRY_HOST
+
+#Example of using external docker registry:
+REGISTRY_HOST=<YOUR_PRIVATE_EXTERNAL_REGISTRY>
+podman login --tls-verify=false $REGISTRY_HOST
 ```
 
 Step 4. Download IDA operator scripts
@@ -65,10 +70,14 @@ Step 2. Preparing IDA Operator Image
   You can get the IDA operator image from the IDA release package, then push it to your private registry.
 
     ```
-    tar -zxvf ida-operator-23.0.3.tgz
-    docker load --input images/ida-operator-23.0.3.tar.gz
-    docker tag ida-operator:23.0.3 <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
-    docker push <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3
+    chmod +x scripts/loadImages.sh
+    scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
+    
+    #Example of using openshift internal docker registry:
+    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ida-operator
+
+    #Example of using external docker registry:
+    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ctesdc
     ```
 
 Step 3. Deploy IDA operator to your cluster.
@@ -77,9 +86,12 @@ Step 3. Deploy IDA operator to your cluster.
 chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <image_pull_secret>
 
-#For example:
-scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
-scripts/deployOperator.sh -i <YOUR_PRIVATE_REGISTRY_URL>/ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
+#Example of using openshift internal docker registry:
+scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:23.0.3 -n ida-operator
+
+#Example of using external docker registry:
+scripts/deployOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.3 -n ida-operator
+scripts/deployOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -100,6 +112,41 @@ oc logs -f deployment/ida-operator
 chmod +x scripts/deleteOperator.sh
 scripts/deleteOperator.sh
 ```
+
+### Upgrade IDA Operator.
+
+Step 1. Switch to the IDA Operator project.
+
+```
+oc project <operator_project_name>
+
+#For example:
+oc project ida-operator
+```
+
+Step 2. Preparing new IDA Operator Image
+
+Follow the Step 2 of **Installing IDA Operator** to prepare the new IDA Operator Image.
+
+Step 3. Upgrade IDA operator.
+
+```
+chmod +x scripts/upgradeOperator.sh
+scripts/upgradeOperator.sh -i <operator_image>
+
+#Example of using openshift internal docker registry:
+scripts/upgradeOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:23.0.3
+
+#Example of using external docker registry:
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.3
+```
+
+Step 4. Monitor the pod until it shows a STATUS of "Running":
+
+```
+oc get pods -w
+```
+
 
 ## IDA Instance
 
@@ -123,8 +170,13 @@ Go to **ida-operator** folder, and load the ida image.
 chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
-#For example:
+#Example of using openshift internal docker registry:
 scripts/loadImages.sh -p ida-23.0.11.tgz -r $REGISTRY_HOST/ida-demo
+scripts/loadImages.sh -p ida-23.0.11-java11.tgz -r $REGISTRY_HOST/ida-demo
+
+#Example of using external docker registry:
+scripts/loadImages.sh -p ida-23.0.11.tgz -r $REGISTRY_HOST/ctesdc
+scripts/loadImages.sh -p ida-23.0.11-java11.tgz -r $REGISTRY_HOST/ctesdc
 ```
 **Notes:** 
 ida-\<version\>.tgz is provided in the IDA release package.
@@ -141,6 +193,9 @@ Step 4. Preparing the IDA storage.
 ```
 chmod +x scripts/createDataPVC.sh
 scripts/createDataPVC.sh -s <storage_class>
+
+# Get the storage class name of your cluster
+oc get sc
 
 #For example:
 scripts/createDataPVC.sh -s managed-nfs-storage
@@ -161,7 +216,14 @@ scripts/createDBConfigMap.sh -i <ida_image>
 
 #For example:
 scripts/createDBPVC.sh -s managed-nfs-storage
+
+#Example of using openshift internal docker registry:
 scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
+scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11-java11
+
+#Example of using external docker registry:
+scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11
+scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11-java11
 ```
 
 - Using External Database (For Product Purpose)
@@ -173,6 +235,9 @@ scripts/createDBConfigMap.sh -i $REGISTRY_HOST/ida-demo/ida:23.0.11
   Step 2. Creating a database credentials.
 
   ```
+  #Switch to your IDA Instance project:
+  oc project <ida_project_name>
+
   oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=<DATABASE_SERVER> \
   --from-literal=DATABASE_NAME=<DATABASE_NAME> \
   --from-literal=DATABASE_PORT_NUMBER=<DATABASE_PORT> \
@@ -219,12 +284,16 @@ scripts/deployIDA.sh -h
 
 #Example of using openshift internal docker registry and embedded database:
 scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11 -n ida-demo -r 1 -t embedded -d postgres
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11-java11 -n ida-demo -r 1 -t embedded -d postgres
+
 
 #Example of using external docker registry and external database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida:23.0.11 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
+scripts/deployIDA.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11-java11 -n ida-demo -r 1 -t external -d postgres -s ida-docker-secret
 
 #Example of using openshift internal docker registry and external database:
 scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11 -n ida-demo -r 1 -t external -d postgres
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11-java11 -n ida-demo -r 1 -t external -d postgres
 ```
 
 If success, you will see the log from your console
@@ -254,4 +323,38 @@ echo "https://$(oc get route | grep ida-web | awk '{print$2}')/ida"
 
 ```
 oc delete IDACluster idadeploy
+```
+
+### Upgrade IDA Instance.
+
+Step 1. Prerequisite.
+
+If there are database changes for the new IDA version, please execute the corresponding migration scripts before upgrade.
+
+Step 2. Switch to the IDA Instance project.
+
+```
+oc project <ida_project_name>
+
+#For example:
+oc project ida-demo
+```
+
+Step 3. Preparing new IDA Image
+
+Follow the Step 2 of **Preparing to install IDA Instance** to prepare the new IDA Image.
+
+Step 4. Upgrade IDA Instance.
+
+```
+chmod +x scripts/upgradeIDA.sh
+scripts/upgradeIDA.sh -i <ida_image>
+
+#Example of using openshift internal docker registry:
+scripts/upgradeIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11
+scripts/upgradeIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-demo/ida:23.0.11-java11
+
+#Example of using external docker registry:
+scripts/upgradeIDA.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11
+scripts/upgradeIDA.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11-java11
 ```
