@@ -37,7 +37,17 @@ else
 fi
 
 # Change the operator image
+RELEASE=$(echo $IMAGEREGISTRY  | rev | cut -d':' -f 1 | rev)
 oc set image deployment/ida-operator operator=$IMAGEREGISTRY
 
+#update label
+oc label serviceaccount/ida-operator release=$RELEASE --overwrite
+oc label role/ida-operator release=$RELEASE --overwrite
+oc label rolebinding/ida-operator release=$RELEASE --overwrite
+oc label clusterrole/ida-operator release=$RELEASE --overwrite
+IDA_OPERATOR_ROLEBINDING_NAME=$(oc get clusterrolebinding | grep ida-operator | head -n 1 | awk '{print$1}')
+oc label clusterrolebinding/$IDA_OPERATOR_ROLEBINDING_NAME release=$RELEASE --overwrite
+oc label crd/idaclusters.sdc.ibm.com release=$RELEASE --overwrite
+oc label deployment/ida-operator release=$RELEASE --overwrite
 
 echo -e "\033[32mIDA Operator has been upgraded. Monitor the pod status with 'oc get pods -w'.\033[0m"
