@@ -74,7 +74,7 @@ Step 2. Preparing IDA Operator Image
     scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
     
     #Example of using openshift internal docker registry:
-    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r image-registry.openshift-image-registry.svc:5000/ida-operator
+    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ida-operator
 
     #Example of using external docker registry:
     scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ctesdc
