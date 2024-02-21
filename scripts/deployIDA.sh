@@ -8,12 +8,11 @@ source ${CUR_DIR}/scripts/helper/common.sh
 JDBC_DRIVER_DIR=${CUR_DIR}/scripts/jdbc
 
 function show_help {
-    echo -e "\nUsage: deployIDA.sh -i ida_image [-t] [-d] \n"
+    echo -e "\nUsage: deployIDA.sh -i ida_image [-t] [-d] [-s] [-c] [-u] [-m] [-p] [-o]\n"
     echo "Options:"
     echo "  -h  Display help"
     echo "  -i  IDA image name"
     echo "      For example: registry_url/ida:version"
-    echo "  -n  The namespace to deploy IDA"
     echo "  -r  Optional: IDA replicas number"
     echo "      Defualt value is 1"
     echo "  -t  Optional: Installation type"
@@ -24,6 +23,10 @@ function show_help {
     echo "      For example: ida-docker-secret"
     echo "  -c  Optional: Custom Liberty SSL certificate path, the default is empty"
     echo "      For example: /root/ida-operator/libertykeystore.p12"
+    echo "  -u  Optional: CPU resource requests for the IDA instance, the default is 2"
+    echo "  -m  Optional: Memory resource requests for the IDA instance, the default is 4Gi"
+    echo "  -p  Optional: CPU resource limits for the IDA instance, the default is 4"
+    echo "  -0  Optional: Memory resource limits for the IDA instanc , the default is 8Gi"
 }
 
 if [[ $1 == "" ]]
@@ -31,15 +34,13 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:n:r:t:d:s:c:" opt; do
+    while getopts "h?i:r:t:d:s:c:u:m:p:o:" opt; do
         case "$opt" in
         h|\?)
             show_help
             exit 0
             ;;
         i)  IMAGEREGISTRY=$OPTARG
-            ;;
-        n)  NAMESPACE=$OPTARG
             ;;
         r)  REPLICAS=$OPTARG
             ;;
@@ -50,6 +51,14 @@ else
         s)  SECRET=$OPTARG
             ;;
         c)  CERT_PATH=$OPTARG
+            ;;
+        u)  CPU_REQUEST=$OPTARG
+            ;;
+        m)  MEMORY_REQUEST=$OPTARG
+            ;;
+        p)  CPU_LIMIT=$OPTARG
+            ;;
+        o)  MEMORY_LIMIT=$OPTARG
             ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
@@ -93,11 +102,6 @@ then
     cp ./descriptors/patterns/ida-cr-demo-external.yaml ./deploycr.yaml
 fi
 
-[ -f ./hazelcast-rbac.yaml ] && rm ./hazelcast-rbac.yaml
-cp ./descriptors/hazelcast-rbac.yaml ./hazelcast-rbac.yaml
-
-cat ./hazelcast-rbac.yaml | sed -e "s|<NAMESPACE>|$NAMESPACE|g" > ./hazelcast-rbac_temp.yaml ;  mv ./hazelcast-rbac_temp.yaml ./hazelcast-rbac.yaml
-
 
 if [ ! -z ${IMAGEREGISTRY} ]; then
 # Change the location of the image
@@ -105,6 +109,7 @@ echo "Using the IDA image name: $IMAGEREGISTRY"
 cat ./deploycr.yaml | sed -e "s|image: <IDA_IMAGE>|image: \"$IMAGEREGISTRY\" |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
+NAMESPACE=$(oc config view --minify -o 'jsonpath={..namespace}')
 cat ./deploycr.yaml | sed -e "s|<NAMESPACE>|$NAMESPACE|g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 
 if [ ! -z ${DATABASE} ]; then
@@ -132,7 +137,30 @@ CERT_ENCODED=$(base64 -w 0 $CERT_PATH)
 cat ./deploycr.yaml | sed -e "s|tlsCert:|tlsCert: $CERT_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
-oc apply -f ./hazelcast-rbac.yaml
+
+if [ ! -z ${CPU_REQUEST} ]; then
+# Change CPU resource requests 
+echo "CPU resource requests: $CPU_REQUEST"
+cat ./deploycr.yaml | sed -e "s|cpuLimit: 4|cpuLimit: $CPU_REQUEST |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${MEMORY_REQUEST} ]; then
+# Change Memory resource requests
+echo "Memory resource requests: $MEMORY_REQUEST"
+cat ./deploycr.yaml | sed -e "s|memoryRequest: 4Gi|memoryRequest: $MEMORY_REQUEST |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${CPU_LIMIT} ]; then
+# Change CPU resource limits
+echo "CPU resource limits: $CPU_LIMIT"
+cat ./deploycr.yaml | sed -e "s|cpuLimit: 4|cpuLimit: $CPU_LIMIT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${MEMORY_LIMIT} ]; then
+# Change Memory resource limits
+echo "Memory resource limits: $MEMORY_LIMIT"
+cat ./deploycr.yaml | sed -e "s|memoryLimit: 8Gi|memoryLimit: $MEMORY_LIMIT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
 oc apply -f ./deploycr.yaml
 
 

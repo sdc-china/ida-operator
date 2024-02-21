@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   name: ida-operator
   labels:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 23.0.3
+    release: 23.0.4
 rules:
   - apiGroups:
       - ""
@@ -17,18 +17,6 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - secrets
-    verbs:
-      - '*'
-  - apiGroups:
-      - ""
-    resources:
-      - events
-    verbs:
-      - create
-  - apiGroups:
-      - ""
-    resources:
       - pods
       - services
       - endpoints
@@ -36,6 +24,7 @@ rules:
       - events
       - configmaps
       - secrets
+      - serviceaccounts
     verbs:
       - '*'
   - apiGroups:
@@ -67,10 +56,9 @@ rules:
       - watch
       - use
   - apiGroups:
-      - ""
+      - route.openshift.io
     resources:
-      - securitycontextconstraints
-      - namespaces
+      - routes
     verbs:
       - create
       - get
@@ -78,6 +66,32 @@ rules:
       - patch
       - update
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      - securitycontextconstraints
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - verbs:
+      - '*'
+    apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+  - verbs:
+     - '*'
+    apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+      - clusterroles
+      - rolebindings
+      - roles
   - apiGroups:
       - sdc.ibm.com
     resources:
