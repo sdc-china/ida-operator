@@ -126,7 +126,7 @@ scripts/deleteOperator.sh -c <operator_scope>
 scripts/deleteOperator.sh 
 
 #Example of cluster-scoped operator uninstallation:
-scripts/deleteOperator.sh -c  Cluster
+scripts/deleteOperator.sh -c Cluster
 ```
 
 ### Upgrade IDA Operator.
