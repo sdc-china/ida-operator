@@ -141,7 +141,7 @@ fi
 if [ ! -z ${CPU_REQUEST} ]; then
 # Change CPU resource requests 
 echo "CPU resource requests: $CPU_REQUEST"
-cat ./deploycr.yaml | sed -e "s|cpuLimit: 4|cpuLimit: $CPU_REQUEST |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+cat ./deploycr.yaml | sed -e "s|cpuRequest: 2|cpuRequest: $CPU_REQUEST |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${MEMORY_REQUEST} ]; then
