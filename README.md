@@ -234,11 +234,7 @@ Step 5. Preparing Database.
   oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=<DATABASE_USER> \
   --from-literal=DATABASE_PASSWORD=<DATABASE_PASSWORD>
 
-  #Example of On-premise DB:
-  oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
-  --from-literal=DATABASE_PASSWORD=password
-  
-  #Example of DB on OpenShift:
+  #Example:
   oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
   --from-literal=DATABASE_PASSWORD=password
   ```
