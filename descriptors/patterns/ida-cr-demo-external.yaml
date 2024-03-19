@@ -3,26 +3,35 @@ kind: IDACluster
 metadata:
   name: idadeploy
 spec:
-  prefixName: idadeploy
-
+  shared:
+    storageClassName: 
   idaDatabase:
     type: postgres
     internal:
       enabled: false
     external:
       enabled: true
-      secretCredentials: ida-external-db-secret
+      databaseName:
+      databasePort:
+      databaseServerName:
+      currentSchema:
+      # The secret for database username and password
+      databaseCredentialSecret: ida-external-db-secret
 
   idaWeb:
     image: <IDA_IMAGE>
     imagePullPolicy: Always
     imagePullSecrets:
-    pvcName: ida-data-pvc
     replicas: 1
-    cpuLimit: 4
-    cpuRequest: 2
-    memoryLimit: 8Gi
-    memoryRequest: 4Gi
+    resources:
+      cpuLimit: 4
+      cpuRequest: 2
+      memoryLimit: 8Gi
+      memoryRequest: 4Gi
+    storage:
+      storageCapacity: 5Gi
+      existingDataPVCName:
     tlsCert:
+    tlsCertPassword:
     waitIDADB:
       image: busybox:1.28

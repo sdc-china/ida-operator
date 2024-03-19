@@ -121,15 +121,18 @@ function check_platform_version(){
     if [[  $res =~ v1.11 ]];
     then
         PLATFORM_VERSION="3.11"
-    elif [[  $res =~ v1.14.6 ]];
+    elif [[  $res =~ v1.25 ]];
     then
-        PLATFORM_VERSION="4.2"
-    elif [[  $res =~ v1.16.2 ]];
+        PLATFORM_VERSION="4.12"
+    elif [[  $res =~ v1.26 ]];
     then
-        PLATFORM_VERSION="4.3"
-    elif [[  $res =~ v1.17.1 ]];
+        PLATFORM_VERSION="4.13"
+    elif [[  $res =~ v1.27 ]];
     then
-        PLATFORM_VERSION="4.4"        
+        PLATFORM_VERSION="4.14"        
+    elif [[  $res =~ v1.28 ]];
+    then
+        PLATFORM_VERSION="4.15"     
     else
         echo -e "\x1B[1;31mUnable to determine OCP version with node version information: $res .\x1B[0m"
     fi

@@ -5,13 +5,13 @@
 CUR_DIR=$(pwd)
 PLATFORM_VERSION=""
 source ${CUR_DIR}/scripts/helper/common.sh
-JDBC_DRIVER_DIR=${CUR_DIR}/scripts/jdbc
 
 function show_help {
-    echo -e "\nUsage: createDBConfigMap.sh -i ida_image \n"
+    echo -e "\nUsage: createDBConfigMap.sh -i ida_image -d db_type \n"
     echo "Options:"
     echo "  -h  Display help"
     echo "  -i  IDA image name"
+    echo "  -d  IDA Database type"
     echo "      For example: registry_url/ida:version"
 }
 
@@ -20,13 +20,15 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:" opt; do
+    while getopts "h?i:d:" opt; do
         case "$opt" in
         h|\?)
             show_help
             exit 0
             ;;
         i)  IMAGEREGISTRY=$OPTARG
+            ;;
+        d)  DATABASE=$OPTARG
             ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
@@ -65,6 +67,12 @@ fi
 
 rm -rf tmp && mkdir tmp && chown 1001:0 tmp
 ${cli_cmd} run -v $(pwd)/tmp:/data --rm $IMAGEREGISTRY cp -r /opt/ol/wlp/sqls /data
-oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql
 
-echo -e "\033[32mThe Secret have been successfully created.\033[0m"
+if [[ ${DATABASE} == "postgres" ]]; then
+    oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql --dry-run=client -o yaml | oc apply -f -
+elif [[ ${DATABASE} == "mysql" ]]
+then
+    oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/mysql/2-data-mysql.sql --from-file=./tmp/sqls/mysql/1-schema-mysql.sql --dry-run=client -o yaml | oc apply -f -
+fi
+
+echo -e "\033[32mThe Configmap have been successfully created.\033[0m"
