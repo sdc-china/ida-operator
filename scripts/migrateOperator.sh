@@ -13,6 +13,7 @@ function show_help {
     echo "  -h  Display help"
     echo "  -i  Operator image name"
     echo "      For example: registry_url/ida-operator:version"
+    echo "  -c  The Operator scope, Cluster or Namespaced, the default is Namespaced"
 }
 
 if [[ $1 == "" ]]
@@ -28,6 +29,8 @@ else
             ;;
         i)  IMAGEREGISTRY=$OPTARG
             ;;
+        c)  SCOPE=$OPTARG
+            ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
             exit -1
@@ -38,10 +41,38 @@ fi
 
 oc scale deployment/ida-operator --replicas=0
 
-oc delete rolebinding/ida-operator
-oc delete role/ida-operator
+if [ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]; then
+  oc delete rolebinding/ida-operator
+  oc delete role/ida-operator
+  oc apply -f ./descriptors/cluster/cluster-role.yaml
+else
+  oc get clusterrolebinding | grep ida-operator | awk '{print$1}' | xargs oc delete clusterrolebinding
+  oc delete clusterrole/ida-operator
 
-oc apply -f ./descriptors/cluster/cluster-role.yaml
+  oc apply -f ./descriptors/namespaced/role.yaml
+  oc apply -f ./descriptors/namespaced/role-binding.yaml
+
+  oc patch deployment/ida-operator --type=json --patch '
+  [
+    { 
+      "op": "add",
+      "path": "/spec/template/spec/containers/0/env",
+      "value": [
+          {
+              "name": "WATCH_NAMESPACE",
+              "valueFrom": {
+                  "fieldRef": {
+                      "fieldPath": "metadata.namespace"
+                  }
+              }
+          }
+       ]
+    }
+  ]
+  '
+  
+fi
+
 oc apply -f ./descriptors/ida-operators-edit.yaml
 
 # Change the operator image

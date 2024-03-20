@@ -1,4 +1,4 @@
-## Upgrade IDA Operator to v24.0.1
+## Migrate IDA Operator from v23.0.3 to v24.0.1
 
 ### Before you begin
 
@@ -33,7 +33,7 @@ oc delete IDACluster/idadeploy
 ```
 
 
-### Upgrade IDA Operator.
+### Migrate IDA Operator.
 
 Step 1. Switch to the IDA Operator project.
 
@@ -44,14 +44,14 @@ oc project <operator_project_name>
 oc project baw-ida
 ```
 
-Step 2. Upgrade IDA operator to v24.0.1.
+Step 2. Migrate IDA operator to v24.0.1.
 
 ```
-chmod +x scripts/upgradeOperatorTo2401.sh
-scripts/upgradeOperatorTo2401.sh -i <operator_image>
+chmod +x scripts/migrateOperator.sh
+scripts/migrateOperator.sh -i <operator_image>
 
 #Example of using external docker registry:
-scripts/upgradeOperatorTo2401.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.1
+scripts/migrateOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.1
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -61,7 +61,7 @@ oc get pods -w
 ```
 
 
-### Upgrade IDA Instance.
+### Migrate IDA Instance.
 
 Step 1. Prerequisite.
 
@@ -97,7 +97,7 @@ oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER
 
 ```
 
-Step 5. Upgrade IDA Instance.
+Step 5. Migrate IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh

@@ -55,11 +55,6 @@ if [ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]; then
 
     NAMESPACE=$(oc config view --minify -o 'jsonpath={..namespace}')
     sed -e "s|<NAMESPACE>|$NAMESPACE|g" ./cluster-role-binding.yaml > ./cluster-role-binding_temp.yaml ;  mv ./cluster-role-binding_temp.yaml ./cluster-role-binding.yaml
-
-    # sed -e "s|<SCOPE>|$SCOPE|g" ./operator-crd.yaml > ./operator-crd_temp.yaml ;  mv ./operator-crd_temp.yaml ./operator-crd.yaml
-else
-    cp ./descriptors/namespaced/operator.yaml ./deployoperator.yaml
-    sed -e "s|<SCOPE>|Namespaced|g" ./operator-crd.yaml > ./operator-crd_temp.yaml ;  mv ./operator-crd_temp.yaml ./operator-crd.yaml
 fi
 
 

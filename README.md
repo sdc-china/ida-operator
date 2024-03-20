@@ -92,14 +92,15 @@ Step 4. Deploy IDA operator to your cluster.
 chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
 
-#Example of cluster-scoped operator and using public docker hub registry:
-scripts/deployOperator.sh -i ctesdc/ida-operator:24.0.1 -c Cluster -s ida-operator-secret
+#Example of namespace-scoped operator and using external docker registry:
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.1 -s ida-operator-secret
 
 #Example of namespace-scoped operator using openshift internal docker registry:
 scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida-operator:24.0.1
 
-#Example of namespace-scoped operator and using external docker registry:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.1 -s ida-operator-secret
+#Example of cluster-scoped operator and using public docker hub registry:
+scripts/deployOperator.sh -i ctesdc/ida-operator:24.0.1 -c Cluster -s ida-operator-secret
+
 ```
 
 Step 5. Monitor the pod until it shows a STATUS of "Running":
