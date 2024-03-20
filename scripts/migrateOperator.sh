@@ -41,12 +41,16 @@ fi
 
 oc scale deployment/ida-operator --replicas=0
 
+RELEASE=$(echo $IMAGEREGISTRY  | rev | cut -d':' -f 1 | rev)
+IDA_OPERATOR_ROLEBINDING_NAME=$(oc get clusterrolebinding | grep ida-operator | head -n 1 | awk '{print$1}')
+
 if [ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]; then
   oc delete rolebinding/ida-operator
   oc delete role/ida-operator
   oc apply -f ./descriptors/cluster/cluster-role.yaml
+  oc label clusterrolebinding/$IDA_OPERATOR_ROLEBINDING_NAME release=$RELEASE --overwrite
 else
-  oc get clusterrolebinding | grep ida-operator | awk '{print$1}' | xargs oc delete clusterrolebinding
+  oc delete clusterrolebinding/$IDA_OPERATOR_ROLEBINDING_NAME
   oc delete clusterrole/ida-operator
 
   oc apply -f ./descriptors/namespaced/role.yaml
@@ -76,14 +80,10 @@ fi
 oc apply -f ./descriptors/ida-operators-edit.yaml
 
 # Change the operator image
-RELEASE=$(echo $IMAGEREGISTRY  | rev | cut -d':' -f 1 | rev)
 oc set image deployment/ida-operator operator=$IMAGEREGISTRY
 
 #update label
 oc label serviceaccount/ida-operator release=$RELEASE --overwrite
-
-IDA_OPERATOR_ROLEBINDING_NAME=$(oc get clusterrolebinding | grep ida-operator | head -n 1 | awk '{print$1}')
-oc label clusterrolebinding/$IDA_OPERATOR_ROLEBINDING_NAME release=$RELEASE --overwrite
 
 oc label crd/idaclusters.sdc.ibm.com release=$RELEASE --overwrite
 oc label deployment/ida-operator release=$RELEASE --overwrite
