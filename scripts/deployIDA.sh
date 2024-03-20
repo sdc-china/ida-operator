@@ -301,7 +301,6 @@ if [[ ${INSTALLATION_TYPE} == "external" ]]; then
     cat ./deploycr.yaml | sed -e "s|databaseServerName:|databaseServerName: $DATABASE_SERVER_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 	if [ ! -z ${DATABASE_SCHEMA} ]; then
 	  echo "DB Schema: $DATABASE_SCHEMA"
-	  CERT_ENCODED=$(base64 -w 0 $CERT_PATH)
 	  cat ./deploycr.yaml | sed -e "s|currentSchema:|currentSchema: $DATABASE_SCHEMA |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 	fi
      cat ./deploycr.yaml | sed -e "s|databaseCredentialSecret: ida-external-db-secret|databaseCredentialSecret: $DATABASE_CREDENTIAL_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
@@ -347,7 +346,7 @@ fi
 oc apply -f ./deploycr.yaml
 
 
-echo -e "\033[1;32mDeployed IDA custom resource. \033[0m"
+echo -e "\033[1;32mWaiting IDA Ready... \033[0m"
 
 sleep 10
 
