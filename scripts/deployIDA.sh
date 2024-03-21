@@ -26,7 +26,8 @@ cat <<EOF
         --db-pvc-name                  - Optional: IDA embedded database pvc name (Required when the insallation type is embedded and you want use the existing IDA database pvc)
         --storage-class                - Optional: Storage class name (Required when the insallation type is embedded)
         --data-storage-capacity        - Optional: IDA data storage capacity, the defualt value is 5Gi
-        --embedded-db-image            - Optional: IDA embedded db image, the defualt value is 'postgres:14.3'
+        --embedded-db-image            - Optional: IDA embedded db image url, the defualt value is 'postgres:14.3'
+        --busybox-image                - Optional: Busybox image url, the defualt value is 'busybox:1.28' (Using for embedded db status check)
         --db-name                      - Optional: IDA external database name (Required when the insallation type is external)
         --db-port                      - Optional: IDA external database port (Required when the insallation type is external)
         --db-server-name               - Optional: IDA external database server host name (Required when the insallation type is external)
@@ -61,7 +62,7 @@ fi
 # Read input parameters
 # Specify command line arguments and suboptions here
 shortopt=hi:r:t:d:s:c:p:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,busybox-image:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -137,6 +138,11 @@ while true ; do
             case "$2" in
                 "") shift 2 ;;
                 *) DATA_STORAGE_CAPACITY=$2 ; shift 2 ;;
+            esac ;;
+        --busybox-image)
+            case "$2" in
+                "") shift 2 ;;
+                *) BUSYBOX_IMAGE=$2 ; shift 2 ;;
             esac ;;
         --embedded-db-image)
             case "$2" in
@@ -337,6 +343,12 @@ if [ ! -z ${DATABASE_IMAGE} ]; then
   # Change DB image 
   echo "DB Image: $DATABASE_IMAGE"
   cat ./deploycr.yaml | sed -e "s|postgres:14.3|$DATABASE_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${BUSYBOX_IMAGE} ]; then
+  # Change busybox image 
+  echo "busybox Image: $BUSYBOX_IMAGE"
+  cat ./deploycr.yaml | sed -e "s|image: busybox:1.28|image: $BUSYBOX_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 chmod +x scripts/createDBConfigMap.sh
