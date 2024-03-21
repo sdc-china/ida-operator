@@ -22,7 +22,7 @@ spec:
           image: ctesdc/ida-operator:24.0.1
           imagePullPolicy: Always
           args:
-            - --metrics-addr=127.0.0.1:8080
+            - --metrics-bind-address=127.0.0.1:8080
           resources:
             limits:
               cpu: 500m

@@ -21,7 +21,7 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:" opt; do
+    while getopts "h?i:c:" opt; do
         case "$opt" in
         h|\?)
             show_help
@@ -43,6 +43,20 @@ oc scale deployment/ida-operator --replicas=0
 
 RELEASE=$(echo $IMAGEREGISTRY  | rev | cut -d':' -f 1 | rev)
 IDA_OPERATOR_ROLEBINDING_NAME=$(oc get clusterrolebinding | grep ida-operator | head -n 1 | awk '{print$1}')
+
+
+oc patch deployment/ida-operator --type=json --patch '
+[
+  { 
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/args",
+    "value": [
+        --metrics-bind-address=127.0.0.1:8080
+     ]
+  }
+]
+'
+
 
 if [ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]; then
   oc delete rolebinding/ida-operator
