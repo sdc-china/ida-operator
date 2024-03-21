@@ -270,7 +270,7 @@ scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.2 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
 
 #Example of using openshift internal docker registry and external on-container database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.2 -r 1 -t external -d postgres --storage-class managed-nfs-storage -db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
+scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.2 -r 1 -t external -d postgres --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
 ```
 
 If success, you will see the log from your console
