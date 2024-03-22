@@ -28,9 +28,10 @@ cat <<EOF
         --data-storage-capacity        - Optional: IDA data storage capacity, the defualt value is 5Gi
         --embedded-db-image            - Optional: IDA embedded db image url, the defualt value is 'postgres:14.3'
         --busybox-image                - Optional: Busybox image url, the defualt value is 'busybox:1.28' (Using for embedded db status check)
-        --db-name                      - Optional: IDA external database name (Required when the insallation type is external)
-        --db-port                      - Optional: IDA external database port (Required when the insallation type is external)
-        --db-server-name               - Optional: IDA external database server host name (Required when the insallation type is external)
+        --db-url                       - Optional: IDA external database name (Required when the insallation type is external and the database is oracle)
+        --db-name                      - Optional: IDA external database name (Required when the insallation type is external and the database is NOT oracle)
+        --db-port                      - Optional: IDA external database port (Required when the insallation type is external and the database is NOT oracle)
+        --db-server-name               - Optional: IDA external database server host name (Required when the insallation type is external and the database is NOT oracle)
         --db-schema                    - Optional: IDA external database current schema
         --db-credential-secret         - Optional: The secret for IDA external database username and password (Required when the insallation type is external)
         --cpu-request                  - Optional: CPU resource requests for the IDA instance, the default is 2
@@ -59,10 +60,14 @@ if [ $# -eq 0 ]; then
 fi
 
 
+# Set initial values for some variables and flags
+CREATE_DB_CM=true
+
+
 # Read input parameters
 # Specify command line arguments and suboptions here
 shortopt=hi:r:t:d:s:c:p:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,busybox-image:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,ignore-db-configmap
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -149,6 +154,11 @@ while true ; do
                 "") shift 2 ;;
                 *) DATABASE_IMAGE=$2 ; shift 2 ;;
             esac ;;
+        --db-url)
+            case "$2" in
+                "") shift 2 ;;
+                *) DATABASE_URL=$2 ; shift 2 ;;
+            esac ;;
         --db-name)
             case "$2" in
                 "") shift 2 ;;
@@ -194,6 +204,7 @@ while true ; do
                 "") shift 2 ;;
                 *) MEMORY_LIMIT=$2 ; shift 2 ;;
             esac ;;
+        --ignore-db-configmap) CREATE_DB_CM=false ; shift ;;
 
         --) shift ; break ;;
         *) echo "$progname: Internal error!" ; exit 5 ;;
@@ -284,6 +295,7 @@ fi
 
 if [ ! -z ${DATA_PVC_NAME} ]; then
 cat ./deploycr.yaml | sed -e "s|existingDataPVCName:|existingDataPVCName: $DATA_PVC_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+cat ./deploycr.yaml | sed -e "s|storageCapacity: 5Gi| |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${DB_PVC_NAME} ]; then
@@ -302,14 +314,18 @@ fi
 
 if [[ ${INSTALLATION_TYPE} == "external" ]]; then
     # Change the database configuration
-    cat ./deploycr.yaml | sed -e "s|databaseName:|databaseName: $DATABASE_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-    cat ./deploycr.yaml | sed -e "s|databasePort:|databasePort: $DATABASE_PORT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-    cat ./deploycr.yaml | sed -e "s|databaseServerName:|databaseServerName: $DATABASE_SERVER_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-	if [ ! -z ${DATABASE_SCHEMA} ]; then
-	  echo "DB Schema: $DATABASE_SCHEMA"
-	  cat ./deploycr.yaml | sed -e "s|currentSchema:|currentSchema: $DATABASE_SCHEMA |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-	fi
-     cat ./deploycr.yaml | sed -e "s|databaseCredentialSecret: ida-external-db-secret|databaseCredentialSecret: $DATABASE_CREDENTIAL_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+    if [[ ${DATABASE} == "oracle" ]]; then
+       cat ./deploycr.yaml | sed -e "s|databaseUrl:|databaseUrl: $DATABASE_URL |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+    else
+        cat ./deploycr.yaml | sed -e "s|databaseName:|databaseName: $DATABASE_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+        cat ./deploycr.yaml | sed -e "s|databasePort:|databasePort: $DATABASE_PORT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+        cat ./deploycr.yaml | sed -e "s|databaseServerName:|databaseServerName: $DATABASE_SERVER_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+        if [ ! -z ${DATABASE_SCHEMA} ]; then
+          echo "DB Schema: $DATABASE_SCHEMA"
+          cat ./deploycr.yaml | sed -e "s|currentSchema:|currentSchema: $DATABASE_SCHEMA |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+        fi
+    fi
+    cat ./deploycr.yaml | sed -e "s|databaseCredentialSecret: ida-external-db-secret|databaseCredentialSecret: $DATABASE_CREDENTIAL_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 
@@ -338,21 +354,23 @@ cat ./deploycr.yaml | sed -e "s|memoryLimit: 8Gi|memoryLimit: $MEMORY_LIMIT |g" 
 fi
 
 if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
-
-if [ ! -z ${DATABASE_IMAGE} ]; then
-  # Change DB image 
-  echo "DB Image: $DATABASE_IMAGE"
-  cat ./deploycr.yaml | sed -e "s|postgres:14.3|$DATABASE_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-fi
-
-if [ ! -z ${BUSYBOX_IMAGE} ]; then
-  # Change busybox image 
-  echo "busybox Image: $BUSYBOX_IMAGE"
-  cat ./deploycr.yaml | sed -e "s|image: busybox:1.28|image: $BUSYBOX_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-fi
-
-chmod +x scripts/createDBConfigMap.sh
-scripts/createDBConfigMap.sh -i $IMAGEREGISTRY -d $DATABASE
+  if [ ! -z ${DATABASE_IMAGE} ]; then
+    # Change DB image 
+    echo "DB Image: $DATABASE_IMAGE"
+    cat ./deploycr.yaml | sed -e "s|postgres:14.3|$DATABASE_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+  fi
+  
+  if [ ! -z ${BUSYBOX_IMAGE} ]; then
+    # Change busybox image 
+    echo "busybox Image: $BUSYBOX_IMAGE"
+    cat ./deploycr.yaml | sed -e "s|image: busybox:1.28|image: $BUSYBOX_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+  fi
+  
+  if [ "${CREATE_DB_CM}" == "true" ]; then
+    chmod +x scripts/createDBConfigMap.sh
+    scripts/createDBConfigMap.sh -i $IMAGEREGISTRY -d $DATABASE
+  fi
+  
 fi
 
 oc apply -f ./deploycr.yaml

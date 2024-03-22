@@ -65,7 +65,7 @@ then
     ${cli_cmd} pull $IMAGEREGISTRY
 fi
 
-rm -rf tmp && mkdir tmp && chown 1001:0 tmp
+rm -rf tmp && mkdir tmp && sudo chown 1001:0 tmp
 ${cli_cmd} run -v $(pwd)/tmp:/data --rm $IMAGEREGISTRY cp -r /opt/ol/wlp/sqls /data
 
 if [[ ${DATABASE} == "postgres" ]]; then

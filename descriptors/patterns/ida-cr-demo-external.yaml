@@ -11,6 +11,8 @@ spec:
       enabled: false
     external:
       enabled: true
+      #For Oracle only.
+      databaseUrl:
       databaseName:
       databasePort:
       databaseServerName:
