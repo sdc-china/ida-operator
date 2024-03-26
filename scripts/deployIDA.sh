@@ -395,7 +395,7 @@ if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
 fi
 
 IDA_DEPLOYMENT_NAME=$(oc get deployment | grep ida-web | head -n 1 | awk '{print$1}')
-ROLLOUT_STATUS_CMD="oc rollout status deployment/$IDA_DEPLOYMENT_NAME"
+ROLLOUT_STATUS_CMD="oc rollout status deployment/$IDA_DEPLOYMENT_NAME  --timeout=10m"
 until $ROLLOUT_STATUS_CMD; do
   $ROLLOUT_STATUS_CMD
 done

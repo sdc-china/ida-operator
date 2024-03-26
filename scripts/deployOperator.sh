@@ -23,7 +23,7 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:c:s:" opt; do
+    while getopts "h?i:c:s:w:" opt; do
         case "$opt" in
         h|\?)
             show_help
@@ -34,6 +34,8 @@ else
         c)  SCOPE=$OPTARG
             ;;
         s)  SECRET=$OPTARG
+            ;;
+        w)  WATCH_NAMESPACE=$OPTARG
             ;;
         :)  echo "Invalid option: -$OPTARG requires an argument"
             show_help
@@ -47,7 +49,7 @@ fi
 [ -f ./operator-crd.yaml ] && rm ./operator-crd.yaml
 cp ./descriptors/operator-crd.yaml ./operator-crd.yaml
 
-if [ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]; then
+if ([ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]) || [ ! -z ${WATCH_NAMESPACE} ]; then
     cp ./descriptors/cluster/operator.yaml ./deployoperator.yaml
     
     [ -f ./cluster-role-binding.yaml ] && rm ./cluster-role-binding.yaml
@@ -79,7 +81,7 @@ sed -e "s|imagePullSecrets:| |g" ./deployoperator.yaml > ./deployoperatorsav.yam
 sed -e "s|- name: <IMAGE_PULL_SECRET>| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
 fi
 
-if [ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]; then
+if ([ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]) || [ ! -z ${WATCH_NAMESPACE} ]; then
     oc apply -f ./descriptors/cluster/cluster-role.yaml
     oc apply -f ./cluster-role-binding.yaml
 else
@@ -92,4 +94,21 @@ oc apply -f ./descriptors/ida-operators-edit.yaml
 oc apply -f ./descriptors/service-account.yaml
 
 oc apply -f ./deployoperator.yaml
+
+if [ ! -z ${WATCH_NAMESPACE} ]; then
+  oc patch deployment/ida-operator --type=json --patch '
+  [
+    { 
+      "op": "add",
+      "path": "/spec/template/spec/containers/0/env",
+      "value": [
+          {
+              "name": "WATCH_NAMESPACE",
+              "value": "'$WATCH_NAMESPACE'"
+          }
+       ]
+    }
+  ]
+  '
+fi
 echo -e "\033[32mAll descriptors have been successfully applied. Monitor the pod status with 'oc get pods -w'.\033[0m"
