@@ -22,6 +22,7 @@ cat <<EOF
         -s|--pull-secret               - Optional: Image pull secret (Default is empty)
         -c|--tls-cert                  - Optional: Custom Liberty SSL certificate path (For example: /root/ida-operator/libertykeystore.p12)
         -p|--tls-cert-password         - Optional: Custom Liberty SSL certificate password, the default value is idaAdmin
+        --release-name                 - Optional: IDA instance release name, the default value is 'idadeploy'
         --data-pvc-name                - Optional: IDA data pvc name (Required when you want use the existing IDA data pvc)
         --db-pvc-name                  - Optional: IDA embedded database pvc name (Required when the insallation type is embedded and you want use the existing IDA database pvc)
         --storage-class                - Optional: Storage class name (Required when the insallation type is embedded)
@@ -67,7 +68,7 @@ CREATE_DB_CM=true
 # Read input parameters
 # Specify command line arguments and suboptions here
 shortopt=hi:r:t:d:s:c:p:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,ignore-db-configmap
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,ignore-db-configmap
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -123,6 +124,11 @@ while true ; do
             case "$2" in
                 "") shift 2 ;;
                 *) CERT_PASSWORD=$2 ; shift 2 ;;
+            esac ;;
+        --release-name)
+            case "$2" in
+                "") shift 2 ;;
+                *) RELEASE_NAME=$2 ; shift 2 ;;
             esac ;;
         --data-pvc-name)
             case "$2" in
@@ -291,6 +297,12 @@ if [ ! -z ${CERT_PASSWORD} ]; then
 # Change Liberty SSL certificate Password
 CERT_PASSWORD_ENCODED=$(echo -n $CERT_PASSWORD | base64)
 cat ./deploycr.yaml | sed -e "s|tlsCertPassword:|tlsCertPassword: $CERT_PASSWORD_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
+if [ ! -z ${RELEASE_NAME} ]; then
+# Change release name
+echo "Set release name to $RELEASE_NAME"
+cat ./deploycr.yaml | sed -e "s|name: idadeploy|name: $RELEASE_NAME |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${DATA_PVC_NAME} ]; then
