@@ -42,11 +42,20 @@ oc set image deployment/ida-operator operator=$IMAGEREGISTRY
 
 #update label
 oc label serviceaccount/ida-operator release=$RELEASE --overwrite
-oc label role/ida-operator release=$RELEASE --overwrite
-oc label rolebinding/ida-operator release=$RELEASE --overwrite
-oc label clusterrole/ida-operator release=$RELEASE --overwrite
-IDA_OPERATOR_ROLEBINDING_NAME=$(oc get clusterrolebinding | grep ida-operator | head -n 1 | awk '{print$1}')
-oc label clusterrolebinding/$IDA_OPERATOR_ROLEBINDING_NAME release=$RELEASE --overwrite
+oc label clusterrole/ida-operators-edit release=$RELEASE --overwrite
+
+IDAROLECOUNT=$(oc get role/ida-operator | tail -n +2 | wc -l)
+if [[ "${IDAROLECOUNT}" == "1" ]];  then
+  oc label role/ida-operator release=$RELEASE --overwrite
+  oc label rolebinding/ida-operator release=$RELEASE --overwrite
+fi
+IDACLUSTERROLECOUNT=$(oc get clusterrole/ida-operator | tail -n +2 | wc -l)
+if [[ "${IDACLUSTERROLECOUNT}" == "1" ]];  then
+  oc label clusterrole/ida-operator release=$RELEASE --overwrite
+  IDA_OPERATOR_ROLEBINDING_NAME=$(oc get clusterrolebinding | grep ida-operator | head -n 1 | awk '{print$1}')
+  oc label clusterrolebinding/$IDA_OPERATOR_ROLEBINDING_NAME release=$RELEASE --overwrite
+fi
+
 oc label crd/idaclusters.sdc.ibm.com release=$RELEASE --overwrite
 oc label deployment/ida-operator release=$RELEASE --overwrite
 

@@ -1,12 +1,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ida-operator
+  name: ida-installer
   labels:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 23.0.3
 rules:
   - apiGroups:
       - ""
@@ -32,10 +31,12 @@ rules:
       - pods
       - services
       - endpoints
+      - persistentvolumes
       - persistentvolumeclaims
       - events
       - configmaps
       - secrets
+      - serviceaccounts
     verbs:
       - '*'
   - apiGroups:
@@ -49,6 +50,7 @@ rules:
       - extensions
     resources:
       - deployments
+      - deployments/scale
       - daemonsets
       - replicasets
       - statefulsets
@@ -78,9 +80,44 @@ rules:
       - patch
       - update
       - watch
+  - verbs:
+      - list
+    apiGroups:
+      - ''
+    resources:
+      - nodes
+  - verbs:
+      - '*'
+    apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+  - verbs:
+     - '*'
+    apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+      - clusterroles
+      - rolebindings
+      - roles
   - apiGroups:
       - sdc.ibm.com
     resources:
       - '*'
     verbs:
       - '*'
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - '*'
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+    verbs:
+      - get
+      - list
+      - delete

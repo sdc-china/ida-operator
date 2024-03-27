@@ -26,15 +26,15 @@ oc create configmap pg-db-configmap --from-file=2-data-postgres.sql --from-file=
 
 Edit **pg-db.yaml**.
 - Modify the **storageClassName** of **pg-db-pvc**
-  ```
-  # Get the storage class name of your cluster
-  oc get sc
-  ```
+```
+# Get the storage class name of your cluster
+oc get sc
+```
 - Modify the environment variables **POSTGRES_USER** and **POSTGRES_PASSWORD** of **pg-db** deployment
 
-  ```
-  oc apply -f pg-db.yaml
-  ```
+```
+oc apply -f pg-db.yaml
+```
 
 ## Access database by Adminer
 
@@ -45,9 +45,9 @@ echo "http://$(oc get route | grep adminer | awk '{print$2}')"
 ## Example of db secret for ida
 
 ```
-oc create secret generic ida-external-db-secret --from-literal=DATABASE_SERVER_NAME=db.ida-db.svc.cluster.local \
---from-literal=DATABASE_NAME=idaweb \
---from-literal=DATABASE_PORT_NUMBER=5432 \
---from-literal=DATABASE_USER=postgres \
+#Switch to your IDA Instance project:
+oc project <ida_project_name>
+  
+oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
 --from-literal=DATABASE_PASSWORD=password
 ```
