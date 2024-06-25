@@ -65,7 +65,7 @@ fi
 if [ ! -z ${IMAGEREGISTRY} ]; then
 # Change the location of the image
 echo "Using the operator image name: $IMAGEREGISTRY"
-sed -e "s|image: .*|image: \"$IMAGEREGISTRY\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+sed -e "s|<IDA_OPERATOR_IMAGE>|\"$IMAGEREGISTRY\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
 fi
 
 if [ ! -z ${SECRET} ]; then
@@ -96,19 +96,6 @@ oc apply -f ./descriptors/service-account.yaml
 oc apply -f ./deployoperator.yaml
 
 if [ ! -z ${WATCH_NAMESPACE} ]; then
-  oc patch deployment/ida-operator --type=json --patch '
-  [
-    { 
-      "op": "add",
-      "path": "/spec/template/spec/containers/0/env",
-      "value": [
-          {
-              "name": "WATCH_NAMESPACE",
-              "value": "'$WATCH_NAMESPACE'"
-          }
-       ]
-    }
-  ]
-  '
+  oc set env deployment/ida-operator WATCH_NAMESPACE=$WATCH_NAMESPACE --overwrite 
 fi
 echo -e "\033[32mAll descriptors have been successfully applied. Monitor the pod status with 'oc get pods -w'.\033[0m"

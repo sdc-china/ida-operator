@@ -1,4 +1,4 @@
-## Migrate IDA Operator from v23.0.3 to v24.0.1
+## Migrate IDA Operator from v23.0.3 to v24.0.2
 
 ### Before you begin
 
@@ -20,8 +20,8 @@ podman login --tls-verify=false $REGISTRY_HOST
 Step 3. Load and push the latest IDA Operator and IDA Web images to your docker registry
 
 ```
-scripts/loadImages.sh -p ida-operator-24.0.1.tgz -r $REGISTRY_HOST/ida
-scripts/loadImages.sh -p ida-24.0.2.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-operator-24.0.2.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.5.tgz -r $REGISTRY_HOST/ida
 ```
 
 Step 4. Backup the IDA instance configuration and delete it from OCP
@@ -44,14 +44,14 @@ oc project <operator_project_name>
 oc project baw-ida
 ```
 
-Step 2. Migrate IDA operator to v24.0.1.
+Step 2. Migrate IDA operator to v24.0.2.
 
 ```
 chmod +x scripts/migrateOperator.sh
 scripts/migrateOperator.sh -i <operator_image>
 
 #Example of using external docker registry:
-scripts/migrateOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.1
+scripts/migrateOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.2
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -101,9 +101,9 @@ Step 5. Migrate IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --tls-cert <tls_cert_path> --tls-cert-password <tls_cert_password> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit>
+scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --tls-cert <tls_cert_path> --tls-cert-password <tls_cert_password> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert>
 
 #Example of using external docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.2 -r 1 -t external -d postgres --data-pvc-name ida-data-pvc --db-server-name localhost --db-name idaweb --db-port 5432 --db-schema public --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t external -d postgres --data-pvc-name ida-data-pvc --db-server-name localhost --db-name idaweb --db-port 5432 --db-schema public --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
 ```
 

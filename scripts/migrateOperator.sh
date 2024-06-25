@@ -94,6 +94,7 @@ fi
 oc apply -f ./descriptors/ida-operators-edit.yaml
 
 # Change the operator image
+oc set env deployment/ida-operator IDA_OPERATOR_IMAGE=$IMAGEREGISTRY --overwrite 
 oc set image deployment/ida-operator operator=$IMAGEREGISTRY
 
 #update label
