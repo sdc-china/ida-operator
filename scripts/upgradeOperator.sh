@@ -36,8 +36,11 @@ else
     done
 fi
 
+oc rollout pause deployment/ida-operator
+
 # Change the operator image
 RELEASE=$(echo $IMAGEREGISTRY  | rev | cut -d':' -f 1 | rev)
+oc set env deployment/ida-operator IDA_OPERATOR_IMAGE=$IMAGEREGISTRY --overwrite 
 oc set image deployment/ida-operator operator=$IMAGEREGISTRY
 
 #update label
@@ -58,5 +61,7 @@ fi
 
 oc label crd/idaclusters.sdc.ibm.com release=$RELEASE --overwrite
 oc label deployment/ida-operator release=$RELEASE --overwrite
+
+oc rollout resume deployment/ida-operator
 
 echo -e "\033[32mIDA Operator has been upgraded. Monitor the pod status with 'oc get pods -w'.\033[0m"

@@ -20,8 +20,8 @@ cat <<EOF
         -t|--installation-type         - Optional: Installation type (Options: embedded or external)
         -d|--db-type                   - Optional: IDA Database type, the default is postgres (Options: postgres, mysql, db2 or oracle.)
         -s|--pull-secret               - Optional: Image pull secret (Default is empty)
-        -c|--tls-cert                  - Optional: Custom Liberty SSL certificate path (For example: /root/ida-operator/libertykeystore.p12)
-        -p|--tls-cert-password         - Optional: Custom Liberty SSL certificate password, the default value is idaAdmin
+        -c|--tls-cert                  - Optional: Custom Liberty SSL certificate path (For example: /root/ida-operator/ida.pem), this pem file should include the certificate and private key.
+        -l|--ldap-tls-cert             - Optional: LDAPS server certificate path (For example: /root/ida-operator/ldap.crt)
         --release-name                 - Optional: IDA instance release name, the default value is 'idadeploy'
         --data-pvc-name                - Optional: IDA data pvc name (Required when you want use the existing IDA data pvc)
         --db-pvc-name                  - Optional: IDA embedded database pvc name (Required when the insallation type is embedded and you want use the existing IDA database pvc)
@@ -67,8 +67,8 @@ CREATE_DB_CM=true
 
 # Read input parameters
 # Specify command line arguments and suboptions here
-shortopt=hi:r:t:d:s:c:p:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,tls-cert-password:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,ignore-db-configmap
+shortopt=hi:r:t:d:s:c:l:
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,ldap-tls-cert:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,ignore-db-configmap
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -120,10 +120,10 @@ while true ; do
                 "") shift 2 ;;
                 *) CERT_PATH=$2 ; shift 2 ;;
             esac ;;
-        -p|--tls-cert-password)
+        -l|--ldap-tls-cert)
             case "$2" in
                 "") shift 2 ;;
-                *) CERT_PASSWORD=$2 ; shift 2 ;;
+                *) LDAP_CERT_PATH=$2 ; shift 2 ;;
             esac ;;
         --release-name)
             case "$2" in
@@ -293,10 +293,10 @@ CERT_ENCODED=$(base64 -w 0 $CERT_PATH)
 cat ./deploycr.yaml | sed -e "s|tlsCert:|tlsCert: $CERT_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
-if [ ! -z ${CERT_PASSWORD} ]; then
-# Change Liberty SSL certificate Password
-CERT_PASSWORD_ENCODED=$(echo -n $CERT_PASSWORD | base64)
-cat ./deploycr.yaml | sed -e "s|tlsCertPassword:|tlsCertPassword: $CERT_PASSWORD_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+if [ ! -z ${LDAP_CERT_PATH} ]; then
+# set LDAP SSL certificate
+LDAP_CERT_ENCODED=$(base64 -w 0 $LDAP_CERT_PATH)
+cat ./deploycr.yaml | sed -e "s|ldapCert:|ldapCert: $LDAP_CERT_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${RELEASE_NAME} ]; then

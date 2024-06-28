@@ -34,6 +34,6 @@ spec:
       storageCapacity: 5Gi
       existingDataPVCName:
     tlsCert:
-    tlsCertPassword:
+    ldapCert:
     waitIDADB:
       image: busybox:1.28
