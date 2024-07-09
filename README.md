@@ -274,6 +274,7 @@ scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida
 ```
 
 **Notes:** If you want to configure signed-certificate for IDA, or add trusted LDAPS certificate, please refer to [Certificates Configuration](docs/certificates-configuration.md) for detailed steps.
+
 If success, you will see the log from your console
 
 ```
