@@ -273,6 +273,7 @@ scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t external -d postgr
 scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.5 -r 1 -t external -d postgres --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
 ```
 
+**Notes:** If you want to configure signed-certificate for IDA, or add trusted LDAPS certificate, please refer to [Certificates Configuration](docs/certificates-configuration.md) for detailed steps.
 If success, you will see the log from your console
 
 ```
