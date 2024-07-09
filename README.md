@@ -19,6 +19,7 @@ oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"
 REGISTRY_HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
 ``` 
 
+
 Step 3. Log in to your docker registry
 
 ```
@@ -61,6 +62,7 @@ Step 2. Preparing IDA Operator Image
 - **If your cluster is connected to the internet**
 
   The ida-operator image is published in Docker Hub. You may need to create the docker hub pull secret.
+
   ```
   oc create secret docker-registry ida-operator-secret --docker-server=docker.io  --docker-username=<docker_username> --docker-password=<docker_password>
   ```
@@ -80,7 +82,15 @@ Step 2. Preparing IDA Operator Image
     scripts/loadImages.sh -p ida-operator-23.0.11.tgz -r $REGISTRY_HOST/ctesdc
     ```
 
-Step 3. Deploy IDA operator to your cluster.
+Step 3. Preparing docker registry secret (Optional)
+
+  If you are using external docker registry, then you may need to create the docker pull secret.
+  
+  ```
+  oc create secret docker-registry ida-operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
+  ```
+
+Step 4. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
@@ -96,7 +106,7 @@ scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/id
 scripts/deployOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.11 -n ida-operator -s ida-operator-secret
 ```
 
-Step 4. Monitor the pod until it shows a STATUS of "Running":
+Step 5. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w
@@ -181,12 +191,14 @@ scripts/loadImages.sh -p ida-23.0.11.tgz -r $REGISTRY_HOST/ida-demo
 #Example of using external docker registry:
 scripts/loadImages.sh -p ida-23.0.11.tgz -r $REGISTRY_HOST/ctesdc
 ```
+
 **Notes:** 
 ida-\<version\>.tgz is provided in the IDA release package.
 
 Step 3. Preparing docker registry secret (Optional)
 
 If you are using external docker registry, then you may need to create the docker pull secret.
+
 ```
 oc create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
 ```
@@ -294,6 +306,7 @@ scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-dem
 ```
 
 If success, you will see the log from your console
+
 ```
 Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
 ```
@@ -353,3 +366,4 @@ scripts/upgradeIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida-de
 #Example of using external docker registry:
 scripts/upgradeIDA.sh -i $REGISTRY_HOST/ctesdc/ida:23.0.11
 ```
+
