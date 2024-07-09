@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 24.0.2
+    release: 24.0.5
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
