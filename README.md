@@ -74,10 +74,10 @@ Step 2. Preparing IDA Operator Image
     scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
     
     #Example of using openshift internal docker registry:
-    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ida-operator
+    scripts/loadImages.sh -p ida-operator-23.0.11.tgz -r $REGISTRY_HOST/ida-operator
 
     #Example of using external docker registry:
-    scripts/loadImages.sh -p ida-operator-23.0.3.tgz -r $REGISTRY_HOST/ctesdc
+    scripts/loadImages.sh -p ida-operator-23.0.11.tgz -r $REGISTRY_HOST/ctesdc
     ```
 
 Step 3. Deploy IDA operator to your cluster.
@@ -87,13 +87,13 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -n <operator_project_name> -s <image_pull_secret>
 
 #Example of using public docker hub registry:
-scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
+scripts/deployOperator.sh -i ctesdc/ida-operator:23.0.11 -n ida-operator -s ida-operator-secret
 
 #Example of using openshift internal docker registry:
-scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:23.0.3 -n ida-operator
+scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:23.0.11 -n ida-operator
 
 #Example of using external docker registry:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.3 -n ida-operator -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.11 -n ida-operator -s ida-operator-secret
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -137,13 +137,13 @@ chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
 #Example of using public docker hub registry:
-scripts/upgradeOperator.sh -i ctesdc/ida-operator:23.0.3
+scripts/upgradeOperator.sh -i ctesdc/ida-operator:23.0.11
 
 #Example of using openshift internal docker registry:
-scripts/upgradeOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:23.0.3
+scripts/upgradeOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:23.0.11
 
 #Example of using external docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.3
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:23.0.11
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
