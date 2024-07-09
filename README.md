@@ -10,23 +10,10 @@ Step 1. Log in to your cluster
 oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 ```
 
-Step 2. Expose OCP internal registy (Optional)
-
-If you are using OCP default internal docker registry, please expose the registry manually
-
-```
-oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
-REGISTRY_HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
-``` 
-
-
 Step 3. Log in to your docker registry
 
-```
-#Using the Podman CLI:
-#Example of using openshift internal docker registry:
-podman login -u $(oc whoami) -p $(oc whoami -t) --tls-verify=false $REGISTRY_HOST
 
+```
 #Example of using external docker registry:
 REGISTRY_HOST=<YOUR_PRIVATE_EXTERNAL_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
@@ -35,7 +22,7 @@ podman login --tls-verify=false $REGISTRY_HOST
 Step 4. Download IDA operator scripts
 
 ```
-git clone git@github.com:sdc-china/ida-operator.git
+git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
@@ -71,9 +58,6 @@ Step 2. Preparing IDA Operator Image
     chmod +x scripts/loadImages.sh
     scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
     
-    #Example of using openshift internal docker registry:
-    scripts/loadImages.sh -p ida-operator-24.0.5.tgz -r $REGISTRY_HOST/ida
-
     #Example of using external docker registry:
     scripts/loadImages.sh -p ida-operator-24.0.5.tgz -r $REGISTRY_HOST/ida
     ```
@@ -94,9 +78,6 @@ scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull
 
 #Example of namespace-scoped operator and using external docker registry:
 scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.5 -s ida-operator-secret
-
-#Example of namespace-scoped operator using openshift internal docker registry:
-scripts/deployOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida-operator:24.0.5
 
 #Example of cluster-scoped operator and using public docker hub registry:
 scripts/deployOperator.sh -i ctesdc/ida-operator:24.0.5 -c Cluster -s ida-operator-secret
@@ -151,14 +132,11 @@ Step 3. Upgrade IDA operator.
 chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
-#Example of using public docker hub registry:
-scripts/upgradeOperator.sh -i ctesdc/ida-operator:24.0.5
-
-#Example of using openshift internal docker registry:
-scripts/upgradeOperator.sh -i image-registry.openshift-image-registry.svc:5000/ida-operator/ida-operator:24.0.5
-
 #Example of using external docker registry:
 scripts/upgradeOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:24.0.5
+
+#Example of using public docker hub registry:
+scripts/upgradeOperator.sh -i ctesdc/ida-operator:24.0.5
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -195,9 +173,6 @@ Go to **ida-operator** folder, and load the ida image.
 ```
 chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
-
-#Example of using openshift internal docker registry:
-scripts/loadImages.sh -p ida-24.0.5.tgz -r $REGISTRY_HOST/ida
 
 #Example of using external docker registry:
 scripts/loadImages.sh -p ida-24.0.5.tgz -r $REGISTRY_HOST/ida
@@ -255,7 +230,7 @@ Step 2. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port>  --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit>
+scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h
@@ -263,14 +238,14 @@ scripts/deployIDA.sh -h
 # Get the storage class name of your cluster
 oc get sc
 
-#Example of using openshift internal docker registry and embedded database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.5 -r 1 -t embedded -d postgres --storage-class managed-nfs-storage
+#Example of using external docker registry and embedded database:
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage
+
+#Example of using external docker registry and external on-container database:
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
 
 #Example of using external docker registry and external database with IDA instance resource requests and limits configuration:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
-
-#Example of using openshift internal docker registry and external on-container database:
-scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.5 -r 1 -t external -d postgres --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
 ```
 
 **Notes:** If you want to configure signed-certificate for IDA, or add trusted LDAPS certificate, please refer to [Certificates Configuration](docs/certificates-configuration.md) for detailed steps.
@@ -329,9 +304,6 @@ Step 4. Upgrade IDA Instance.
 ```
 chmod +x scripts/upgradeIDA.sh
 scripts/upgradeIDA.sh -i <ida_image>
-
-#Example of using openshift internal docker registry:
-scripts/upgradeIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.5
 
 #Example of using external docker registry:
 scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5
