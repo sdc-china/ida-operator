@@ -34,8 +34,7 @@ openssl s_client -showcerts -connect c97721v.fyre.com:636 </dev/null 2>/dev/null
 Step 2. Configure LDAPS certificate parameter
 
 ```
-scripts/deployIDA.sh --tls-cert <ldap_tls_cert>
---ldap-tls-cert
+scripts/deployIDA.sh --ldap-tls-cert <ldap_tls_cert>
 
 #For example:
 scripts/deployIDA.sh --ldap-tls-cert /root/ldapserver-cert.crt
