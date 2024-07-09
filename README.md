@@ -282,11 +282,7 @@ oc delete IDACluster idadeploy
 
 ### Upgrade IDA Instance.
 
-Step 1. Prerequisite.
-
-If there are database changes for the new IDA version, please execute the corresponding migration scripts before upgrade.
-
-Step 2. Switch to the IDA Instance project.
+Step 1. Switch to the IDA Instance project.
 
 ```
 oc project <ida_project_name>
@@ -295,11 +291,11 @@ oc project <ida_project_name>
 oc project ida
 ```
 
-Step 3. Preparing new IDA Image
+Step 2. Preparing new IDA Image
 
 Follow the Step 2 of **Preparing to install IDA Instance** to prepare the new IDA Image.
 
-Step 4. Upgrade IDA Instance.
+Step 3. Upgrade IDA Instance.
 
 ```
 chmod +x scripts/upgradeIDA.sh
