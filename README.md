@@ -228,7 +228,7 @@ oc project ida
 
 Step 2. Deploying an IDA Instance.
 
-**Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](certificates-configuration.md).
+**Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](docs/certificates-configuration.md).
 
 ```
 chmod +x scripts/deployIDA.sh
