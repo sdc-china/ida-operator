@@ -59,7 +59,7 @@ Step 2. Preparing IDA Operator Image
     scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
     
     #Example of using external docker registry:
-    scripts/loadImages.sh -p ida-operator-24.0.5.tgz -r $REGISTRY_HOST/ida
+    scripts/loadImages.sh -p ida-operator-24.0.6.tgz -r $REGISTRY_HOST/ida
     ```
 
 Step 3. Preparing docker registry secret (Optional)
@@ -175,7 +175,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #Example of using external docker registry:
-scripts/loadImages.sh -p ida-24.0.5.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.6.tgz -r $REGISTRY_HOST/ida
 ```
 
 **Notes:** 
