@@ -10,7 +10,7 @@ Step 1. Log in to your cluster
 oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 ```
 
-Step 3. Log in to your docker registry
+Step 2. Log in to your docker registry
 
 
 ```
@@ -19,14 +19,14 @@ REGISTRY_HOST=<YOUR_PRIVATE_EXTERNAL_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
 ```
 
-Step 4. Download IDA operator scripts
+Step 3. Download IDA operator scripts
 
 ```
 git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
-Step 5. Download IDA release package
+Step 4. Download IDA release package
 
 ## IDA Operator
 
