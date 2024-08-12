@@ -103,4 +103,4 @@ spec:
               mountPath: /docker-entrypoint-initdb.d
       restartPolicy: Always
       imagePullSecrets:
-        - name: docker-hub-secret
+        - name: docker-secret

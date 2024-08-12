@@ -6,10 +6,10 @@
 oc new-project ida-db
 ```
 
-## Create docker hub secrect
+## Create private docker registry secret
 
 ```
-oc create secret docker-registry docker-hub-secret --docker-server=docker.io --docker-username=<docker_username> --docker-password=<docker_password>
+oc create secret docker-registry docker-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
 ```
 
 ## Create database configmap
@@ -25,6 +25,7 @@ oc create configmap pg-db-configmap --from-file=2-data-postgres.sql --from-file=
 ## Create database deployment
 
 Edit **pg-db.yaml**.
+- Modify the **image** path according to your private docker registry.
 - Modify the **storageClassName** of **pg-db-pvc**
 ```
 # Get the storage class name of your cluster

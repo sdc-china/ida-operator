@@ -18,7 +18,7 @@ spec:
       databaseServerName:
       currentSchema:
       # The secret for database username and password
-      databaseCredentialSecret: ida-external-db-secret
+      databaseCredentialSecret: ida-external-db-credential
 
   idaWeb:
     image: <IDA_IMAGE>
@@ -35,5 +35,7 @@ spec:
       existingDataPVCName:
     tlsCert:
     ldapCert:
+    network:
+      type:  
     waitIDADB:
       image: busybox:1.28

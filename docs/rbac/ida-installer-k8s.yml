@@ -67,21 +67,8 @@ rules:
     verbs:
       - '*'
   - apiGroups:
-      - security.openshift.io
-    resources:
-      - securitycontextconstraints
-    verbs:
-      - create
-      - get
-      - list
-      - patch
-      - update
-      - watch
-      - use
-  - apiGroups:
       - ""
     resources:
-      - securitycontextconstraints
       - namespaces
     verbs:
       - create
@@ -149,11 +136,3 @@ rules:
       - ingresses
     verbs:
       - '*'
-  - apiGroups:
-      - route.openshift.io
-    resources:
-      - routes
-    verbs:
-      - get
-      - list
-      - delete
