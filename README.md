@@ -14,8 +14,8 @@ Step 2. Log in to your docker registry
 
 
 ```
-#Example of using external docker registry:
-REGISTRY_HOST=<YOUR_PRIVATE_EXTERNAL_REGISTRY>
+#Example of using private docker registry:
+REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
 ```
 
@@ -54,14 +54,12 @@ Step 2. Preparing IDA Operator Image
     chmod +x scripts/loadImages.sh
     scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
     
-    #Example of using external docker registry:
+    #Example of using private docker registry:
     scripts/loadImages.sh -p ida-operator-24.0.6.tgz -r $REGISTRY_HOST/ida
     ```
 
-Step 3. Preparing docker registry secret (Optional)
+Step 3. Preparing private docker registry secret
 
-  If you are using external docker registry, then you may need to create the docker pull secret.
-  
   ```
   oc create secret docker-registry ida-operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
   ```
@@ -167,13 +165,11 @@ Get the IDA image from the IDA release package, then push it to your private reg
 chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
-#Example of using external docker registry:
+#Example of using private docker registry:
 scripts/loadImages.sh -p ida-24.0.6.tgz -r $REGISTRY_HOST/ida
 ```
 
-Step 3. Preparing docker registry secret (Optional)
-
-If you are using external docker registry, then you may need to create the docker pull secret.
+Step 3. Preparing private docker registry secret
 
 ```
 oc create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
@@ -291,7 +287,7 @@ Step 3. Upgrade IDA Instance.
 chmod +x scripts/upgradeIDA.sh
 scripts/upgradeIDA.sh -i <ida_image>
 
-#Example of using external docker registry:
+#Example of using private docker registry:
 scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6
 ```
 
