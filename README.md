@@ -48,11 +48,7 @@ oc project ida
 
 Step 2. Preparing IDA Operator Image
 
-  IDA operator image is published in Docker Hub. You can access it directly if your cluster is connected to internet.
-
-- **If your cluster is NOT connected to the internet**
-
-  You can get the IDA operator image from the IDA release package, then push it to your private registry.
+  Get the IDA operator image from the IDA release package, then push it to your private registry.
 
     ```
     chmod +x scripts/loadImages.sh
@@ -76,11 +72,11 @@ Step 4. Deploy IDA operator to your cluster.
 chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
 
-#Example of namespace-scoped operator and using external docker registry:
+#Example of namespace-scoped operator:
 scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.6 -s ida-operator-secret
 
-#Example of cluster-scoped operator and using public docker hub registry:
-scripts/deployOperator.sh -i ctesdc/ida-operator:24.0.6 -c Cluster -s ida-operator-secret
+#Example of cluster-scoped operator:
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.6 -c Cluster -s ida-operator-secret
 
 ```
 
@@ -132,11 +128,8 @@ Step 3. Upgrade IDA operator.
 chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
-#Example of using external docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ctesdc/ida-operator:24.0.6
-
-#Example of using public docker hub registry:
-scripts/upgradeOperator.sh -i ctesdc/ida-operator:24.0.6
+#Example of using private docker registry:
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.6
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -168,7 +161,7 @@ oc project ida
 
 Step 2. Load and push ida image to your docker registry.
 
-Go to **ida-operator** folder, and load the ida image.
+Get the IDA image from the IDA release package, then push it to your private registry.
 
 ```
 chmod +x scripts/loadImages.sh
@@ -177,9 +170,6 @@ scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 #Example of using external docker registry:
 scripts/loadImages.sh -p ida-24.0.6.tgz -r $REGISTRY_HOST/ida
 ```
-
-**Notes:** 
-ida-\<version\>.tgz is provided in the IDA release package.
 
 Step 3. Preparing docker registry secret (Optional)
 
@@ -240,13 +230,13 @@ scripts/deployIDA.sh -h
 # Get the storage class name of your cluster
 oc get sc
 
-#Example of using external docker registry and embedded database:
+#Example of using private docker registry and embedded database:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage
 
-#Example of using external docker registry and external on-container database:
+#Example of using private docker registry and external on-container database:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential
 
-#Example of using external docker registry and external database with IDA instance resource requests and limits configuration:
+#Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
 ```
 
