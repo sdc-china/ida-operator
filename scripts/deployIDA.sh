@@ -38,17 +38,15 @@ cat <<EOF
         --cpu-request                  - Optional: CPU resource requests for the IDA instance, the default is 2
         --memory-request               - Optional: Memory resource requests for the IDA instance, the default is 4Gi
         --cpu-limit                    - Optional: CPU resource limits for the IDA instance, the default is 4
-        --memory-limit                 - Optional: Memory resource limits for the IDA instanc , the default is 8Gi
+        --memory-limit                 - Optional: Memory resource limits for the IDA instance , the default is 8Gi
+        --network-type                 - Optional: Network type for the IDA instance(route, loadBalancer).
 
 
- Example of using openshift internal docker registry and embedded database:
- scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.5 -r 1 -t embedded -d postgres --storage-class managed-nfs-storage
+ Example of using private docker registry and embedded database:
+ scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t embedded -d postgres --storage-class managed-nfs-storage
 
- Example of using external docker registry and external database with IDA instance resource requests and limits configuration:
- scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
-
- Example of using openshift internal docker registry and external on-container database:
- scripts/deployIDA.sh -i image-registry.openshift-image-registry.svc:5000/ida/ida:24.0.5 -r 1 -t external -d postgres --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
+ Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
+ scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
 
 EOF
 }
@@ -60,15 +58,13 @@ if [ $# -eq 0 ]; then
    exit 1
 fi
 
-
 # Set initial values for some variables and flags
 CREATE_DB_CM=true
-
 
 # Read input parameters
 # Specify command line arguments and suboptions here
 shortopt=hi:r:t:d:s:c:l:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,ldap-tls-cert:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,ignore-db-configmap
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,ldap-tls-cert:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,network-type:,ignore-db-configmap
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -210,8 +206,12 @@ while true ; do
                 "") shift 2 ;;
                 *) MEMORY_LIMIT=$2 ; shift 2 ;;
             esac ;;
+        --network-type)
+            case "$2" in
+                "") shift 2 ;;
+                *) NETWORK_TYPE=$2 ; shift 2 ;;
+            esac ;;
         --ignore-db-configmap) CREATE_DB_CM=false ; shift ;;
-
         --) shift ; break ;;
         *) echo "$progname: Internal error!" ; exit 5 ;;
     esac
@@ -221,8 +221,6 @@ if [ "$helppage" == "true" ]; then
    usage
    exit
 fi
-
-
 
 function select_installation_type(){
     COLUMNS=12
@@ -265,7 +263,7 @@ echo "Using the IDA image name: $IMAGEREGISTRY"
 cat ./deploycr.yaml | sed -e "s|image: <IDA_IMAGE>|image: \"$IMAGEREGISTRY\" |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
-NAMESPACE=$(oc config view --minify -o 'jsonpath={..namespace}')
+NAMESPACE=$(${KUBE_CMD} config view --minify -o 'jsonpath={..namespace}')
 cat ./deploycr.yaml | sed -e "s|<NAMESPACE>|$NAMESPACE|g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 
 if [ ! -z ${DATABASE} ]; then
@@ -337,7 +335,7 @@ if [[ ${INSTALLATION_TYPE} == "external" ]]; then
           cat ./deploycr.yaml | sed -e "s|currentSchema:|currentSchema: $DATABASE_SCHEMA |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
         fi
     fi
-    cat ./deploycr.yaml | sed -e "s|databaseCredentialSecret: ida-external-db-secret|databaseCredentialSecret: $DATABASE_CREDENTIAL_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+    cat ./deploycr.yaml | sed -e "s|databaseCredentialSecret: ida-external-db-credential|databaseCredentialSecret: $DATABASE_CREDENTIAL_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 
@@ -365,6 +363,12 @@ echo "Memory resource limits: $MEMORY_LIMIT"
 cat ./deploycr.yaml | sed -e "s|memoryLimit: 8Gi|memoryLimit: $MEMORY_LIMIT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
+if [ ! -z ${NETWORK_TYPE} ]; then
+# Change network type
+echo "Network Type: $NETWORK_TYPE"
+cat ./deploycr.yaml | sed -e "s|type:  |type: $NETWORK_TYPE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+fi
+
 if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
   if [ ! -z ${DATABASE_IMAGE} ]; then
     # Change DB image 
@@ -385,7 +389,7 @@ if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
   
 fi
 
-oc apply -f ./deploycr.yaml
+${KUBE_CMD} apply -f ./deploycr.yaml
 
 
 echo -e "\033[1;32mWaiting IDA Ready... \033[0m"
@@ -395,8 +399,8 @@ sleep 10
 if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
     # wait DB POD ready
     while true; do
-        IDA_POD_NAME=$(oc get pod | grep ida-db | awk '{print$1}')
-        IDA_POD_READY=$(oc get pods $IDA_POD_NAME -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' | awk '{print$1}')
+        IDA_POD_NAME=$(${KUBE_CMD} get pod | grep ida-db | awk '{print$1}')
+        IDA_POD_READY=$(${KUBE_CMD} get pods $IDA_POD_NAME -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' | awk '{print$1}')
         if [ "$IDA_POD_READY" = "True" ] ; then
             break;
         else
@@ -406,20 +410,16 @@ if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
     done
 fi
 
-IDA_DEPLOYMENT_NAME=$(oc get deployment | grep ida-web | head -n 1 | awk '{print$1}')
-ROLLOUT_STATUS_CMD="oc rollout status deployment/$IDA_DEPLOYMENT_NAME  --timeout=10m"
+IDA_DEPLOYMENT_NAME=$(${KUBE_CMD} get deployment | grep ida-web | head -n 1 | awk '{print$1}')
+ROLLOUT_STATUS_CMD="${KUBE_CMD} rollout status deployment/$IDA_DEPLOYMENT_NAME  --timeout=10m"
 until $ROLLOUT_STATUS_CMD; do
   $ROLLOUT_STATUS_CMD
 done
 
-IDA_ROUTE_NAME=$(oc get route | grep ida-web | awk '{print$1}')
-
-if [ "$IDA_ROUTE_NAME" = "" ] ; then
-  oc create route passthrough --service $(oc get svc | grep ida-web | awk '{print$1}')
+if [ "${NETWORK_TYPE}" == "route" ]; then
+    echo "Success! You could visit IDA by the url: https://$(${KUBE_CMD} get route | grep ida-web | awk '{print$2}')/ida"
+else
+    echo "Success! The IDA cluster internal service url is: $(${KUBE_CMD} get svc | grep ida-web | awk '{print$1}').$NAMESPACE.svc.cluster.local, please expose IDA service based on your cluster network."
 fi
-
-echo "Success! You could visit IDA by the url: https://$(oc get route | grep ida-web | awk '{print$2}')/ida"
-
   
-
 exit 0

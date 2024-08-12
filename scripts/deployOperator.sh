@@ -3,9 +3,7 @@
 # This script need to be executed under root path ida-operator
 
 CUR_DIR=$(pwd)
-PLATFORM_VERSION=""
 source ${CUR_DIR}/scripts/helper/common.sh
-check_platform_version
 
 function show_help {
     echo -e "\nUsage: deployOperator.sh -i operator_image \n"
@@ -55,7 +53,7 @@ if ([ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]) || [ ! -z ${WATCH_NAMESPAC
     [ -f ./cluster-role-binding.yaml ] && rm ./cluster-role-binding.yaml
     cp ./descriptors/cluster/cluster-role-binding.yaml ./cluster-role-binding.yaml
 
-    NAMESPACE=$(oc config view --minify -o 'jsonpath={..namespace}')
+    NAMESPACE=$(${KUBE_CMD} config view --minify -o 'jsonpath={..namespace}')
     sed -e "s|<NAMESPACE>|$NAMESPACE|g" ./cluster-role-binding.yaml > ./cluster-role-binding_temp.yaml ;  mv ./cluster-role-binding_temp.yaml ./cluster-role-binding.yaml
 else
     cp ./descriptors/namespaced/operator.yaml ./deployoperator.yaml
@@ -82,20 +80,20 @@ sed -e "s|- name: <IMAGE_PULL_SECRET>| |g" ./deployoperator.yaml > ./deployopera
 fi
 
 if ([ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]) || [ ! -z ${WATCH_NAMESPACE} ]; then
-    oc apply -f ./descriptors/cluster/cluster-role.yaml
-    oc apply -f ./cluster-role-binding.yaml
+    ${KUBE_CMD} apply -f ./descriptors/cluster/cluster-role.yaml
+    ${KUBE_CMD} apply -f ./cluster-role-binding.yaml
 else
-    oc apply -f ./descriptors/namespaced/role.yaml
-    oc apply -f ./descriptors/namespaced/role-binding.yaml
+    ${KUBE_CMD} apply -f ./descriptors/namespaced/role.yaml
+    ${KUBE_CMD} apply -f ./descriptors/namespaced/role-binding.yaml
 fi
 
-oc apply -f ./operator-crd.yaml
-oc apply -f ./descriptors/ida-operators-edit.yaml
-oc apply -f ./descriptors/service-account.yaml
+${KUBE_CMD} apply -f ./operator-crd.yaml
+${KUBE_CMD} apply -f ./descriptors/ida-operators-edit.yaml
+${KUBE_CMD} apply -f ./descriptors/service-account.yaml
 
-oc apply -f ./deployoperator.yaml
+${KUBE_CMD} apply -f ./deployoperator.yaml
 
 if [ ! -z ${WATCH_NAMESPACE} ]; then
-  oc set env deployment/ida-operator WATCH_NAMESPACE=$WATCH_NAMESPACE --overwrite 
+  ${KUBE_CMD} set env deployment/ida-operator WATCH_NAMESPACE=$WATCH_NAMESPACE --overwrite 
 fi
-echo -e "\033[32mAll descriptors have been successfully applied. Monitor the pod status with 'oc get pods -w'.\033[0m"
+echo -e "\033[32mAll descriptors have been successfully applied. Monitor the pod status with '${KUBE_CMD} get pods -w'.\033[0m"

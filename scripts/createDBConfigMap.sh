@@ -3,7 +3,6 @@
 # This script need to be executed under root path ida-operator
 
 CUR_DIR=$(pwd)
-PLATFORM_VERSION=""
 source ${CUR_DIR}/scripts/helper/common.sh
 
 function show_help {
@@ -14,6 +13,10 @@ function show_help {
     echo "  -d  IDA Database type"
     echo "      For example: registry_url/ida:version"
 }
+
+unset cli_cmd
+unset local_repo_prefix
+unset loaded_msg_prefix
 
 if [[ $1 == "" ]]
 then
@@ -69,10 +72,10 @@ rm -rf tmp && mkdir tmp && sudo chown 1001:0 tmp
 ${cli_cmd} run -v $(pwd)/tmp:/data --rm $IMAGEREGISTRY cp -r /opt/ol/wlp/sqls /data
 
 if [[ ${DATABASE} == "postgres" ]]; then
-    oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql --dry-run=client -o yaml | oc apply -f -
+    ${KUBE_CMD} create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql --dry-run=client -o yaml | ${KUBE_CMD} apply -f -
 elif [[ ${DATABASE} == "mysql" ]]
 then
-    oc create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/mysql/2-data-mysql.sql --from-file=./tmp/sqls/mysql/1-schema-mysql.sql --dry-run=client -o yaml | oc apply -f -
+    ${KUBE_CMD} create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/mysql/2-data-mysql.sql --from-file=./tmp/sqls/mysql/1-schema-mysql.sql --dry-run=client -o yaml | ${KUBE_CMD} apply -f -
 fi
 
 echo -e "\033[32mThe Configmap have been successfully created.\033[0m"

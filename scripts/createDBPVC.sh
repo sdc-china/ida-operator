@@ -3,9 +3,7 @@
 # This script need to be executed under root path ida-operator
 
 CUR_DIR=$(pwd)
-PLATFORM_VERSION=""
 source ${CUR_DIR}/scripts/helper/common.sh
-check_platform_version
 
 function show_help {
     echo -e "\nUsage: createDBPVC.sh -s storage_class_name \n"
@@ -44,6 +42,6 @@ echo "Using the storage class name: $STORAGECLASS"
 sed -e "s|storageClassName: .*|storageClassName: \"$STORAGECLASS\" |g" ./deploydbpvc.yaml > ./deploydbpvcsav.yaml ;  mv ./deploydbpvcsav.yaml ./deploydbpvc.yaml
 fi
 
-oc apply -f ./deploydbpvc.yaml
+${KUBE_CMD} apply -f ./deploydbpvc.yaml
 
-echo -e "\033[32mThe Embedded DB PVC have been successfully created. Monitor the pvc status with 'oc get pvc -w'.\033[0m"
+echo -e "\033[32mThe Embedded DB PVC have been successfully created. Monitor the pvc status with '${KUBE_CMD} get pvc -w'.\033[0m"

@@ -30,6 +30,19 @@ function set_global_env_vars() {
         SED_COMMAND_FORMAT='sed -i s/\r//g'
         YQ_CMD=${CUR_DIR}/helper/yq/yq_linux_amd64
     fi
+    
+    if command -v "kubectl" >/dev/null 2>&1
+    then
+        echo "Use kubectl command."
+        KUBE_CMD="kubectl"
+    elif command -v "oc" >/dev/null 2>&1
+    then
+        echo "Use oc command."
+        KUBE_CMD="oc"
+    else
+        echo "No available Kubernetes-compatible command tool. Exit."
+        exit -1
+    fi
 }
 
 ############################
