@@ -1,4 +1,4 @@
-# Installing the IDA operator by hand
+# Installing the IDA operator on OpenShift
 
 ## Before you begin
 
