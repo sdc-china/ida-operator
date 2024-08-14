@@ -44,7 +44,17 @@ git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
-Step 5. Download IDA release package
+Step 5. Load IDA docker images
+
+  Get the IDA image file **ida-all-<version>.tgz**, then push it to your private registry.
+
+    ```
+    chmod +x scripts/loadImages.sh
+    scripts/loadImages.sh -p ida-all-<version>.tgz -r <docker_registry>
+    
+    #Example of using private docker registry:
+    scripts/loadImages.sh -p ida-all-24.0.6.tgz -r $REGISTRY_HOST/ida
+    ```
 
 ## IDA Operator
 
@@ -64,25 +74,13 @@ kubectl create namespace ida
 kubectl config set-context --current --namespace=ida
 ```
 
-Step 2. Preparing IDA Operator Image
-
-  Get the IDA operator image from the IDA release package, then push it to your private registry.
-
-    ```
-    chmod +x scripts/loadImages.sh
-    scripts/loadImages.sh -p ida-operator-<version>.tgz -r <docker_registry>
-    
-    #Example of using private docker registry:
-    scripts/loadImages.sh -p ida-operator-24.0.6.tgz -r $REGISTRY_HOST/ida
-    ```
-
-Step 3. Preparing private docker registry secret
+Step 2. Preparing private docker registry secret
 
   ```
   kubectl create secret docker-registry ida-operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
   ```
 
-Step 4. Deploy IDA operator to your cluster.
+Step 3. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
@@ -96,7 +94,7 @@ scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.6 -c Cluster -
 
 ```
 
-Step 5. Monitor the pod until it shows a STATUS of "Running":
+Step 4. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 kubectl get pods -w
@@ -175,24 +173,13 @@ kubectl create namespace ida
 kubectl config set-context --current --namespace=ida
 ```
 
-Step 2. Load and push ida image to your docker registry.
-
-Get the IDA image from the IDA release package, then push it to your private registry.
-
-```
-chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
-
-#Example of using private docker registry:
-scripts/loadImages.sh -p ida-24.0.6.tgz -r $REGISTRY_HOST/ida
-```
-
-Step 3. Preparing private docker registry secret
+Step 2. Preparing private docker registry secret
 
 ```
 kubectl create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
 ```
-Step 4. Preparing Database.
+
+Step 3. Preparing Database.
 
 - For Demo Purpose (Using Embedded Database)
 
