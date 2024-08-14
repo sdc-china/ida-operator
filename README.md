@@ -28,7 +28,7 @@ cd ida-operator
 
 Step 4. Load IDA docker images
 
-  Get the IDA image file **ida-all-<version>.tgz**, then push it to your private registry.
+  Get the IDA image file **ida-all-&lt;version&gt;.tgz**, then push it to your private registry.
 
     ```
     chmod +x scripts/loadImages.sh
