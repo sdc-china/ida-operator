@@ -15,7 +15,7 @@ cat <<EOF
 
  Usage: $progname <options>"
         -h|--help                      - help page
-        -i|--image                     - IDA image name (For example: registry_url/ida:24.0.7version)
+        -i|--image                     - IDA image name (For example: registry_url/ida:24.0.7)
         -r|--replicas                  - Optional: IDA replicas number, the defualt value is 1
         -t|--installation-type         - Optional: Installation type (Options: embedded or external)
         -d|--db-type                   - Optional: IDA Database type, the default is postgres (Options: postgres, mysql, db2 or oracle.)
