@@ -40,20 +40,20 @@ podman login --tls-verify=false $REGISTRY_HOST
 Step 4. Download IDA operator scripts
 
 ```
-git clone https://github.com/sdc-china/ida-24.0.7operator.git
-cd ida-24.0.7operator
+git clone https://github.com/sdc-china/ida-operator.git
+cd ida-operator
 ```
 
 Step 5. Load IDA docker images
 
-  Get the IDA image file **ida-24.0.7all-&lt;version&gt;.tgz**, then push it to your private registry.
+  Get the IDA image file **ida-all-&lt;version&gt;.tgz**, then push it to your private registry.
 
     ```
     chmod +x scripts/loadImages.sh
-    scripts/loadImages.sh -p ida-24.0.7all-<version>.tgz -r <docker_registry>
+    scripts/loadImages.sh -p ida-all-<version>.tgz -r <docker_registry>
     
     #Example of using private docker registry:
-    scripts/loadImages.sh -p ida-24.0.7all-24.0.7.tgz -r $REGISTRY_HOST/ida
+    scripts/loadImages.sh -p ida-all-24.0.7.tgz -r $REGISTRY_HOST/ida
     ```
 
 ## IDA Operator
@@ -77,7 +77,7 @@ kubectl config set-context --current --namespace=ida
 Step 2. Preparing private docker registry secret
 
   ```
-  kubectl create secret docker-registry ida-24.0.7operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
+  kubectl create secret docker-registry ida-operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
   ```
 
 Step 3. Deploy IDA operator to your cluster.
@@ -87,10 +87,10 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
 
 #Example of namespace-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-24.0.7operator:24.0.7 -s ida-24.0.7operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7 -s ida-operator-secret
 
 #Example of cluster-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-24.0.7operator:24.0.7 -c Cluster -s ida-24.0.7operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7 -c Cluster -s ida-operator-secret
 
 ```
 
@@ -103,7 +103,7 @@ kubectl get pods -w
 **Notes:** When started, you can monitor the operator logs with the following command:
 
 ```
-kubectl logs -f deployment/ida-24.0.7operator
+kubectl logs -f deployment/ida-operator
 ```
 
 ### Uninstall IDA Operator.
@@ -143,7 +143,7 @@ chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
 #Example of using private docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-24.0.7operator:24.0.7
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -155,10 +155,10 @@ kubectl get pods -w
 
 ## IDA Instance
 
-**Notes:**  If Installing the IDA with non cluster-admin user, cluster admin needs to assign the **ida-24.0.7operators-edit** role to installer user.
+**Notes:**  If Installing the IDA with non cluster-admin user, cluster admin needs to assign the **ida-operators-edit** role to installer user.
 
 ```
-kubectl create clusterrolebinding ida-24.0.7edit-rolebinding --clusterrole ida-24.0.7operators-edit --user <K8S_USER>
+kubectl create clusterrolebinding ida-edit-rolebinding --clusterrole ida-operators-edit --user <K8S_USER>
 ```
 
 ### Preparing to install IDA Instance
@@ -176,7 +176,7 @@ kubectl config set-context --current --namespace=ida
 Step 2. Preparing private docker registry secret
 
 ```
-kubectl create secret docker-registry ida-24.0.7docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
+kubectl create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
 ```
 
 Step 3. Preparing Database.
@@ -197,11 +197,11 @@ Step 3. Preparing Database.
   #Switch to your IDA Instance namespace:
   kubectl config set-context --current --namespace=<ida_namespace>
 
-  kubectl create secret generic ida-24.0.7external-db-credential --from-literal=DATABASE_USER=<DATABASE_USER> \
+  kubectl create secret generic ida-external-db-credential --from-literal=DATABASE_USER=<DATABASE_USER> \
   --from-literal=DATABASE_PASSWORD=<DATABASE_PASSWORD>
 
   #Example:
-  kubectl create secret generic ida-24.0.7external-db-credential --from-literal=DATABASE_USER=postgres \
+  kubectl create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
   --from-literal=DATABASE_PASSWORD=password
   ```
 
@@ -231,19 +231,19 @@ scripts/deployIDA.sh -h
 kubectl get sc
 
 #Example of using private docker registry and embedded database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-24.0.7docker-secret --storage-class managed-nfs-storage
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage
 
 #Example of using private docker registry and external on-container database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-24.0.7docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-24.0.7db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-24.0.7external-db-credential
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential
 
 #Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-24.0.7docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-24.0.7external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
 ```
 
 If success, you will see the log from your console
 
 ```
-"Success! The IDA cluster internal service url is: `idadeploy-ida-24.0.7web.ida.svc.cluster.local`, please expose IDA service based on your cluster network."
+"Success! The IDA cluster internal service url is: `idadeploy-ida-web.ida.svc.cluster.local`, please expose IDA service based on your cluster network."
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -255,16 +255,16 @@ kubectl get pods -w
 **Notes:** When started, you can monitor the IDA logs with the following command:
 
 ```
-kubectl logs -f deployment/idadeploy-ida-24.0.7web
+kubectl logs -f deployment/idadeploy-ida-web
 ```
 
 ### IDA Access URL
 
-You can find the IDA cluster internal service url by command `echo $(kubectl get svc | grep ida-24.0.7web | awk '{print$1}').<IDA_NAMESPACE>.svc.cluster.local`, please expose IDA service based on your cluster network.
+You can find the IDA cluster internal service url by command `echo $(kubectl get svc | grep ida-web | awk '{print$1}').<IDA_NAMESPACE>.svc.cluster.local`, please expose IDA service based on your cluster network.
 
 ```
 #Example of exposing IDA service by NGINX Ingress Controller:
-kubectl create ingress ida-24.0.7web --class=nginx --rule <IDA_HOST>/*=idadeploy-ida-24.0.7web:9443 --annotation nginx.ingress.kubernetes.io/backend-protocol=HTTPS -n <IDA_NAMESPACE>
+kubectl create ingress ida-web --class=nginx --rule <IDA_HOST>/*=idadeploy-ida-web:9443 --annotation nginx.ingress.kubernetes.io/backend-protocol=HTTPS -n <IDA_NAMESPACE>
 ```
 
 

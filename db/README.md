@@ -3,7 +3,7 @@
 ## Create new namespace
 
 ```
-oc new-project ida-24.0.7db
+oc new-project ida-db
 ```
 
 ## Create private docker registry secret
@@ -49,6 +49,6 @@ echo "http://$(oc get route | grep adminer | awk '{print$2}')"
 #Switch to your IDA Instance project:
 oc project <ida_project_name>
   
-oc create secret generic ida-24.0.7external-db-credential --from-literal=DATABASE_USER=postgres \
+oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
 --from-literal=DATABASE_PASSWORD=password
 ```
