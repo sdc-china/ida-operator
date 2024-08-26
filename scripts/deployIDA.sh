@@ -15,7 +15,7 @@ cat <<EOF
 
  Usage: $progname <options>"
         -h|--help                      - help page
-        -i|--image                     - IDA image name (For example: registry_url/ida:version)
+        -i|--image                     - IDA image name (For example: registry_url/ida:24.0.7version)
         -r|--replicas                  - Optional: IDA replicas number, the defualt value is 1
         -t|--installation-type         - Optional: Installation type (Options: embedded or external)
         -d|--db-type                   - Optional: IDA Database type, the default is postgres (Options: postgres, mysql, db2 or oracle.)
@@ -28,7 +28,6 @@ cat <<EOF
         --storage-class                - Optional: Storage class name (Required when the insallation type is embedded)
         --data-storage-capacity        - Optional: IDA data storage capacity, the defualt value is 5Gi
         --embedded-db-image            - Optional: IDA embedded db image url, the defualt value is 'postgres:14.3'
-        --busybox-image                - Optional: Busybox image url, the defualt value is 'busybox:1.28' (Using for embedded db status check)
         --db-url                       - Optional: IDA external database name (Required when the insallation type is external and the database is oracle)
         --db-name                      - Optional: IDA external database name (Required when the insallation type is external and the database is NOT oracle)
         --db-port                      - Optional: IDA external database port (Required when the insallation type is external and the database is NOT oracle)
@@ -43,10 +42,10 @@ cat <<EOF
 
 
  Example of using private docker registry and embedded database:
- scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t embedded -d postgres --storage-class managed-nfs-storage
+ scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres --storage-class managed-nfs-storage
 
  Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
- scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.6 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
+ scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
 
 EOF
 }
@@ -64,7 +63,7 @@ CREATE_DB_CM=true
 # Read input parameters
 # Specify command line arguments and suboptions here
 shortopt=hi:r:t:d:s:c:l:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,ldap-tls-cert:,embedded-db-image:,busybox-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,network-type:,ignore-db-configmap
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,ldap-tls-cert:,embedded-db-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,network-type:,ignore-db-configmap
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -145,11 +144,6 @@ while true ; do
             case "$2" in
                 "") shift 2 ;;
                 *) DATA_STORAGE_CAPACITY=$2 ; shift 2 ;;
-            esac ;;
-        --busybox-image)
-            case "$2" in
-                "") shift 2 ;;
-                *) BUSYBOX_IMAGE=$2 ; shift 2 ;;
             esac ;;
         --embedded-db-image)
             case "$2" in
@@ -374,12 +368,6 @@ if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
     # Change DB image 
     echo "DB Image: $DATABASE_IMAGE"
     cat ./deploycr.yaml | sed -e "s|postgres:14.3|$DATABASE_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-  fi
-  
-  if [ ! -z ${BUSYBOX_IMAGE} ]; then
-    # Change busybox image 
-    echo "busybox Image: $BUSYBOX_IMAGE"
-    cat ./deploycr.yaml | sed -e "s|image: busybox:1.28|image: $BUSYBOX_IMAGE |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
   fi
   
   if [ "${CREATE_DB_CM}" == "true" ]; then

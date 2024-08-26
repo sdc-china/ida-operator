@@ -3,8 +3,8 @@
 ## Create new namespace
 
 ```
-kubectl create namespace ida-db
-kubectl config set-context --current --namespace=ida-db
+kubectl create namespace ida-24.0.7db
+kubectl config set-context --current --namespace=ida-24.0.7db
 ```
 
 ## Create private docker registry secret
@@ -48,6 +48,6 @@ You can find the DB internal service url by command `echo $(kubectl get svc | gr
 #Switch to your IDA Instance namespace:
 kubectl config set-context --current --namespace=<ida_namespace>
   
-kubectl create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
+kubectl create secret generic ida-24.0.7external-db-credential --from-literal=DATABASE_USER=postgres \
 --from-literal=DATABASE_PASSWORD=password
 ```
