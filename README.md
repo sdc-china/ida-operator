@@ -30,14 +30,14 @@ cd ida-operator
 
 Step 4. Load IDA docker images
 
-  Get the IDA image file **ida-all-&lt;version&gt;.tgz**, then push it to your private registry.
+  Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
 
     ```
     chmod +x scripts/loadImages.sh
-    scripts/loadImages.sh -p ida-all-<version>.tgz -r <docker_registry>
+    scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
     
     #Example of using private docker registry:
-    scripts/loadImages.sh -p ida-all-24.0.7.tgz -r $REGISTRY_HOST/ida
+    scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
     ```
 
 ## IDA Operator
