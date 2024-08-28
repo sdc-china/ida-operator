@@ -2,9 +2,11 @@
 
 For other Kubernetes platform please refer to [README_K8S](README_K8S.md).
 
-## Before you begin
+## Prerequisite
 
-Step 1. Log in to your cluster
+Log in to your cluster by either of the two ways.
+
+- For installer with cluster-admin role
 
 ```
 #Using the OpenShift CLI:
@@ -12,7 +14,13 @@ Step 1. Log in to your cluster
 oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 ```
 
-Step 2. Log in to your docker registry
+- For installer without cluster-admin role
+
+Please refer to the steps in [Installing IDA without cluster-admin role](docs/non-cluster-admin-install.md#for-openshift)
+
+## Before you begin
+
+Step 1. Log in to your docker registry
 
 
 ```
@@ -21,14 +29,14 @@ REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
 ```
 
-Step 3. Download IDA operator scripts
+Step 2. Download IDA operator scripts
 
 ```
 git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
-Step 4. Load IDA docker images
+Step 3. Load IDA docker images
 
   Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
 
@@ -43,8 +51,6 @@ Step 4. Load IDA docker images
 ## IDA Operator
 
 By default, IDA operator watches and manages resources in a single Namespace. You need to change the operator scope to cluster-scoped when operator installation if you want IDA Operator watches resources that are created in any Namespace.
-
-**Notes:**  IDA Operator installation requires an Openshift user with the cluster-admin role.
 
 ### Installing IDA Operator
 

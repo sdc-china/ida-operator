@@ -1,5 +1,26 @@
 # Installing the IDA operator on Other Kubernetes Platform
 
+## Prerequisite
+
+Log in to your cluster by either of the two ways.
+
+- For installer with cluster-admin role
+
+```
+#Login By Basic Auth
+kubectl config set-credentials <cluster-user>/<cluster-host>:<port> --username=<cluster-user> --password=<password>
+#Login By Token
+kubectl config set-credentials <cluster-user>/<cluster-host>:<port> --token=<user_token>
+
+kubectl config set-cluster <cluster-host>:<port> --insecure-skip-tls-verify=true --server=https://<cluster-host>:<port>
+kubectl config set-context default/<cluster-host>:<port>/<cluster-user> --user=<cluster-user>/<cluster-host>:<port> --namespace=default --cluster=<cluster-host>:<port>
+kubectl config use-context default/<cluster-host>:<port>/<cluster-user>
+```
+
+- For installer without cluster-admin role
+
+Please refer to the steps in [Installing IDA without cluster-admin role](docs/non-cluster-admin-install.md#for-kubernetes)
+
 ## Before you begin
 
 Step 1. Install Kubectl (Optional)
@@ -15,20 +36,7 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 ```
 
-Step 2. Log in to your cluster
-
-```
-#Login By Basic Auth
-kubectl config set-credentials <cluster-user>/<cluster-host>:<port> --username=<cluster-user> --password=<password>
-#Login By Token
-kubectl config set-credentials <cluster-user>/<cluster-host>:<port> --token=<user_token>
-
-kubectl config set-cluster <cluster-host>:<port> --insecure-skip-tls-verify=true --server=https://<cluster-host>:<port>
-kubectl config set-context default/<cluster-host>:<port>/<cluster-user> --user=<cluster-user>/<cluster-host>:<port> --namespace=default --cluster=<cluster-host>:<port>
-kubectl config use-context default/<cluster-host>:<port>/<cluster-user>
-```
-
-Step 3. Log in to your docker registry
+Step 2. Log in to your docker registry
 
 
 ```
@@ -37,14 +45,14 @@ REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
 ```
 
-Step 4. Download IDA operator scripts
+Step 3. Download IDA operator scripts
 
 ```
 git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
-Step 5. Load IDA docker images
+Step 4. Load IDA docker images
 
   Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
 
@@ -59,8 +67,6 @@ Step 5. Load IDA docker images
 ## IDA Operator
 
 By default, IDA operator watches and manages resources in a single Namespace. You need to change the operator scope to cluster-scoped when operator installation if you want IDA Operator watches resources that are created in any Namespace.
-
-**Notes:**  IDA Operator installation requires an Kubernetes user with the cluster-admin role.
 
 ### Installing IDA Operator
 
