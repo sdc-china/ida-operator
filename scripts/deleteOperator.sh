@@ -37,11 +37,11 @@ else
     ${KUBE_CMD} delete -f ./descriptors/namespaced/role-binding.yaml
 fi
 
-${KUBE_CMD} delete -f ./descriptors/ida-operators-edit.yaml
+# ${KUBE_CMD} delete -f ./descriptors/ida-operators-edit.yaml
 ${KUBE_CMD} delete -f ./descriptors/service-account.yaml
 
 
-${KUBE_CMD} patch crd/idaclusters.sdc.ibm.com -p '{"metadata":{"finalizers":[]}}' --type=merge
-${KUBE_CMD} delete crd idaclusters.sdc.ibm.com
+# ${KUBE_CMD} patch crd/idaclusters.sdc.ibm.com -p '{"metadata":{"finalizers":[]}}' --type=merge
+# ${KUBE_CMD} delete crd idaclusters.sdc.ibm.com
 
 echo "All descriptors have been successfully deleted."
