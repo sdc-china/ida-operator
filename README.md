@@ -1,7 +1,5 @@
 # Installing the IDA operator on OpenShift
 
-For other Kubernetes platform please refer to [README_K8S](README_K8S.md).
-
 ## Prerequisite
 
 Log in to your cluster by either of the two ways.
