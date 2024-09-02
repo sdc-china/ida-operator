@@ -1,4 +1,20 @@
-## Migrate IDA from v23.0.11 to v24.0.5
+## Migrate IDA from v23.0.11 to v24.0.7
+
+### Prerequisite
+
+Log in to your cluster by either of the two ways.
+
+- For installer with cluster-admin role
+
+```
+#Using the OpenShift CLI:
+
+oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
+```
+
+- For installer without cluster-admin role
+
+Please refer to the steps in [Installing IDA without cluster-admin role](non-cluster-admin-install.md#for-openshift)
 
 ### Before you begin
 
@@ -20,8 +36,7 @@ podman login --tls-verify=false $REGISTRY_HOST
 Step 3. Load and push the latest IDA Operator and IDA Web images to your docker registry
 
 ```
-scripts/loadImages.sh -p ida-operator-24.0.5.tgz -r $REGISTRY_HOST/ida
-scripts/loadImages.sh -p ida-24.0.5.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
 ```
 
 Step 4. Backup the IDA instance configuration and delete it from OCP
@@ -44,14 +59,14 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Migrate IDA operator to v24.0.5.
+Step 2. Migrate IDA operator to v24.0.7.
 
 ```
 chmod +x scripts/migrateOperator.sh
 scripts/migrateOperator.sh -i <operator_image>
 
 #Example of using external docker registry:
-scripts/migrateOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.5
+scripts/migrateOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -106,7 +121,7 @@ chmod +x scripts/deployIDA.sh
 scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert>
 
 #Example of using external docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.5 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-schema public --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-schema <DB_SCHEMA>> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --tls-cert <tls_cert_path>
 ```
 
 Step 6. Run Database migration page in IDA.
