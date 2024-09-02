@@ -203,29 +203,38 @@ oc project <ida_project_name>
 #For example:
 oc project ida
 ```
+Step 2. Preparing the IDA Data storage.
 
-Step 2. Deploying an IDA Instance.
+```
+chmod +x scripts/createDataPVC.sh
+scripts/createDataPVC.sh -s <storage_class>
+
+# Get the storage class name of your cluster
+oc get sc
+
+#For example:
+scripts/createDataPVC.sh -s managed-nfs-storage
+```
+
+Step 3. Deploying an IDA Instance.
 
 **Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](docs/certificates-configuration.md).
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert> --network-type <network_type>
+scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --data-pvc-name <existing_data_pvc> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert> --network-type <network_type>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h
 
-# Get the storage class name of your cluster
-oc get sc
-
 #Example of using private docker registry and embedded database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --network-type route
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --network-type route
 
 #Example of using private docker registry and external on-container database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential --network-type route
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential --network-type route
 
 #Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --network-type route
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --network-type route
 ```
 
 If success, you will see the log from your console
@@ -234,7 +243,7 @@ If success, you will see the log from your console
 Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
 ```
 
-Step 3. Monitor the pod until it shows a STATUS of "Running":
+Step 4. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w
