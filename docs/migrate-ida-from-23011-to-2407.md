@@ -114,10 +114,10 @@ Step 4. Migrate IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert>
+scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert> --network-type <network_type>
 
 #Example of using external docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-schema <DB_SCHEMA>> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --tls-cert <tls_cert_path>
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-schema <DB_SCHEMA> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --tls-cert <tls_cert_path> --network-type route
 ```
 
 Step 5. Run Database migration page in IDA.
