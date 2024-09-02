@@ -216,7 +216,7 @@ oc get sc
 scripts/createDataPVC.sh -s managed-nfs-storage
 ```
 
-Step 2. Deploying an IDA Instance.
+Step 3. Deploying an IDA Instance.
 
 **Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](docs/certificates-configuration.md).
 
@@ -243,7 +243,7 @@ If success, you will see the log from your console
 Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
 ```
 
-Step 3. Monitor the pod until it shows a STATUS of "Running":
+Step 4. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w
