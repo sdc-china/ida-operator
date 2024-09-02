@@ -78,11 +78,7 @@ oc get pods -w
 
 ### Migrate IDA Instance.
 
-Step 1. Prerequisite.
-
-Please execute the corresponding database migration scripts before IDA upgrade.
-
-Step 2. Switch to the IDA Instance project.
+Step 1. Switch to the IDA Instance project.
 
 ```
 oc project <ida_project_name>
@@ -91,7 +87,7 @@ oc project <ida_project_name>
 oc project ida
 ```
 
-Step 3. Delete unused objects.
+Step 2. Delete unused objects.
 
 ```
 oc delete clusterrole/hazelcast-cluster-role
@@ -99,7 +95,7 @@ oc delete rolebinding/hazelcast-role-binding
 oc get route | grep ida-web | awk '{print$1}' | xargs oc delete route
 ```
 
-Step 4. Creating IDA database credentials.
+Step 3. Creating IDA database credentials.
 
 ```
 
@@ -112,7 +108,7 @@ oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER
 
 ```
 
-Step 5. Migrate IDA Instance.
+Step 4. Migrate IDA Instance.
 
 **Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](certificates-configuration.md).
 
@@ -124,11 +120,11 @@ scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> 
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-schema <DB_SCHEMA>> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --tls-cert <tls_cert_path>
 ```
 
-Step 6. Run Database migration page in IDA.
+Step 5. Run Database migration page in IDA.
 
 Please refer to IDA doc: https://sdc-china.github.io/IDA-doc/installation/installation-migrating-ida-application.html
 
-Step 7. Restart IDA Pod.
+Step 6. Restart IDA Pod.
 
 ```
 oc rollout restart deployments/idadeploy-ida-web
