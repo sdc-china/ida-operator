@@ -124,6 +124,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/idaweb-config.yaml") . | sha256sum }}
     spec:
       {{- if and .Values.idaDatabase.external.gCloudSQL.enabled .Values.idaDatabase.external.gCloudSQL.iamAccount}}
+      serviceAccount: "{{.Release.Name}}-ida-cloud-sql-sa"
       serviceAccountName: "{{.Release.Name}}-ida-cloud-sql-sa"
       {{- end}}
       containers:
