@@ -32,6 +32,16 @@ idaDatabase:
       connectionName:
       proxyImage: cloud-sql-proxy:2.11.0
 
+selenium:
+  hub:
+    image: selenium/hub:4.10.0
+  firefoxNode:
+    image: selenium/node-firefox:4.10.0
+  chromeNode:
+    image: selenium/node-chrome:4.10.0
+  edgeNode:
+    image: selenium/node-edge:4.10.0
+
 operator:
   image: ida-operator:24.0.7
 

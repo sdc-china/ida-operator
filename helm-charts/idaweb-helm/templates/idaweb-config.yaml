@@ -73,6 +73,18 @@ data:
   HAZELCAST_NETWORK_JOIN_KUBERNETES_NAMESPACE: {{.Release.Namespace}}
   HAZELCAST_NETWORK_JOIN_TCP_IP_ENABLED: "false"
   {{- end}}
+  {{- if .Values.selenium.hub.image}}
+  SELENIUM_HUB_IMAGE_NAME: "{{.Values.selenium.hub.image}}"
+  {{- end}}
+  {{- if .Values.selenium.firefoxNode.image}}
+  SELENIUM_FIREFOX_NODE_IMAGE_NAME: "{{.Values.selenium.firefoxNode.image}}"
+  {{- end}}
+  {{- if .Values.selenium.chromeNode.image}}
+  SELENIUM_CHROME_NODE_IMAGE_NAME: "{{.Values.selenium.chromeNode.image}}"
+  {{- end}}
+  {{- if .Values.selenium.edgeNode.image}}
+  SELENIUM_EDGE_NODE_IMAGE_NAME: "{{.Values.selenium.edgeNode.image}}"
+  {{- end}}
   
 ---
 
