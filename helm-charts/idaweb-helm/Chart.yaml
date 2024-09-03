@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 1.16.0
+description: A Helm chart for creating a IDA Web Server in Kubernetes
+name: idaweb-helm
+type: application
+version: 24.0.7
