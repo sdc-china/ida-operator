@@ -2,16 +2,13 @@
 kind: Service
 metadata:
   labels:
-    app: "db"
-  name: "db"
+    app: "pg-db"
+  name: "pg-db"
 spec:
   ports:
-  - name: "db-port"
+  - name: "pg-db-port"
     port: 5432
     targetPort: 5432
-  - name: "adminer-port"
-    port: 8080
-    targetPort: 8080
   selector:
     app: "pg-db"
   type: ClusterIP
@@ -31,23 +28,6 @@ spec:
   resources:
     requests:
       storage: 5Gi
-
----
-
-kind: Route
-apiVersion: route.openshift.io/v1
-metadata:
-  name: adminer
-  labels:
-    app: adminer
-spec:
-  path: /
-  to:
-    kind: Service
-    name: db
-  port:
-    targetPort: adminer-port
-  wildcardPolicy: None
 
 ---
 
@@ -75,13 +55,7 @@ spec:
           configMap:
             name: pg-db-configmap
       containers:
-        - name: adminer
-          image: adminer
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-          resources: {}
-        - name: db
+        - name: pg-db
           image: postgres:14.3
           imagePullPolicy: Always
           ports:

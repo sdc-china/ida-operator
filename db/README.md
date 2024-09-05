@@ -37,11 +37,9 @@ oc get sc
 oc apply -f pg-db.yaml
 ```
 
-## Access database by Adminer
+## Access database
 
-```
-echo "http://$(oc get route | grep adminer | awk '{print$2}')"
-```
+You can find the DB internal service url by command `echo $(oc get svc | grep pg-db | awk '{print$1}').<DB_NAMESPACE>.svc.cluster.local`.
 
 ## Example of db secret for ida
 

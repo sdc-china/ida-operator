@@ -40,7 +40,7 @@ kubectl apply -f pg-db.yaml
 
 ## Access database
 
-You can find the DB internal service url by command `echo $(kubectl get svc | grep db | awk '{print$1}').<DB_NAMESPACE>.svc.cluster.local`.
+You can find the DB internal service url by command `echo $(kubectl get svc | grep pg-db | awk '{print$1}').<DB_NAMESPACE>.svc.cluster.local`.
 
 ## Example of db secret for ida
 
