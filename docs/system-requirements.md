@@ -7,7 +7,7 @@ Component | CPU Request (m) | CPU Limit (m) | Memory Request (Mi) | Memory Limit
 IDA Operator | 100 | 500 | 256 | 512 |  |  | 1
 IDA Web | 1000 | 2000 | 2048 | 4096 | 20 | ReadWriteOnce(RWO) | 1
 
-## Medium profile (Recommended):
+## Medium profile:
 
 Component | CPU Request (m) | CPU Limit (m) | Memory Request (Mi) | Memory Limit (Mi) | Disk space (Gi) | Access mode | Number of replicas
 --- | --- | --- | --- | --- | --- | --- | ---
