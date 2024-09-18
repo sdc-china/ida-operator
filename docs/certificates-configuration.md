@@ -1,6 +1,6 @@
 ## Configuring IDA Certificates
 
-### Configuring a signed-certificate for IDA
+### Prepare signed-certificate file for IDA
 
 Step 1. Obtain the private key and public certificate of signed-certificate
 
@@ -13,7 +13,7 @@ cat ida.crt >> /root/ida.pem
 ```
 
 
-### Configuring trusted LDAPS certificate in IDA
+### Prepare trusted LDAPS certificate file for IDA
 
 Step 1. Export LDAPS server certificate into a file
 
