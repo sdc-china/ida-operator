@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 24.0.7
+    release: 24.0.8
 spec:
   replicas: 1
   selector:
@@ -32,7 +32,7 @@ spec:
               memory: 512Mi
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
       imagePullSecrets:
         - name: <IMAGE_PULL_SECRET>
       terminationGracePeriodSeconds: 10

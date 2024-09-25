@@ -1,8 +1,23 @@
 # Installing the IDA operator on Other Kubernetes Platform
 
-## Prerequisite
+Planning for IDA deployment according to [System Requirements](docs/system-requirements.md).
 
-Log in to your cluster by either of the two ways.
+## Before you begin
+
+Step 1. Install Kubectl
+
+```
+#Latest Version:
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+#Specific Version:
+curl -LO "https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+```
+
+Step 2. Log in to your cluster by either of the two ways.
 
 - For installer with cluster-admin role
 
@@ -19,25 +34,26 @@ kubectl config use-context default/<cluster-host>:<port>/<cluster-user>
 
 - For installer without cluster-admin role
 
-Please refer to the steps in [Installing IDA without cluster-admin role](docs/non-cluster-admin-install.md#for-kubernetes)
-
-## Before you begin
-
-Step 1. Install Kubectl (Optional)
-
 ```
-#Latest Version:
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+#Create service account in target namespace by cluster admin
+kubectl create namespace <ida_namespace>
+kubectl config set-context --current --namespace=<ida_namespace>
+kubectl create sa ida-installer-sa
+kubectl apply -f ./docs/rbac/ida-installer-k8s.yml 
+kubectl create clusterrolebinding ida-installer-rolebinding --clusterrole=ida-installer --serviceaccount=<ida_namespace>:ida-installer-sa
 
-#Specific Version:
-curl -LO "https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+#Get service account token
+kubectl apply -f ./docs/rbac/ida-installer-secret.yml
+TOKEN=`kubectl get secret ida-installer-secret -o jsonpath={.data.token} | base64 -d`
 
+#Login service account
+kubectl config set-credentials ida-installer/<cluster-host>:<port> --token=$TOKEN
+kubectl config set-cluster <cluster-host>:<port> --insecure-skip-tls-verify=true --server=https://<cluster-host>:<port>
+kubectl config set-context ida/<cluster-host>:<port>/ida-installer --user=ida-installer/<cluster-host>:<port> --namespace=<ida_namespace> --cluster=<cluster-host>:<port>
+kubectl config use-context ida/<cluster-host>:<port>/ida-installer
 ```
 
-Step 2. Log in to your docker registry
-
+Step 3. Log in to your docker registry
 
 ```
 #Example of using private docker registry:
@@ -45,28 +61,26 @@ REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
 ```
 
-Step 3. Download IDA operator scripts
+Step 4. Download IDA operator scripts
 
 ```
 git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
-Step 4. Load IDA docker images
+Step 5. Load IDA docker images
 
-  Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
+Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
 
-    ```
-    chmod +x scripts/loadImages.sh
-    scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
-    
-    #Example of using private docker registry:
-    scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
-    ```
+```
+chmod +x scripts/loadImages.sh
+scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
+
+#Example of using private docker registry:
+scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
+```
 
 ## IDA Operator
-
-By default, IDA operator watches and manages resources in a single Namespace. You need to change the operator scope to cluster-scoped when operator installation if you want IDA Operator watches resources that are created in any Namespace.
 
 ### Installing IDA Operator
 
@@ -82,9 +96,9 @@ kubectl config set-context --current --namespace=ida
 
 Step 2. Preparing private docker registry secret
 
-  ```
-  kubectl create secret docker-registry ida-operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
-  ```
+```
+kubectl create secret docker-registry ida-operator-secret --docker-server=<docker_registry>  --docker-username=<docker_username> --docker-password=<docker_password>
+```
 
 Step 3. Deploy IDA operator to your cluster.
 
@@ -185,7 +199,62 @@ Step 2. Preparing private docker registry secret
 kubectl create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
 ```
 
-Step 3. Preparing Database.
+Step 3. Preparing signed SSL certificate secret (Optional)
+
+By default, IDA uses self-signed SSL certification. You can also prepare your own signed SSL certifications which includes the files "tls.crt" and tls.key", then create a secret for it.
+
+```
+#For example:
+kubectl create secret tls ida-tls-secret --cert tls.crt --key tls.key
+
+```
+
+Step 4. Preparing LDAPS SSL certificate secret (Optional)
+
+If you want to integrate with LDAP server by LDAPS protocol, then you need to add the LDAPS SSL certificate into IDA trusted certification list.
+
+- You can get the LDAPS certificate file by infrastructure team or export by LDAP server URL.
+
+```
+openssl s_client -showcerts -connect <LDAPS server host>:<LDAP server port> </dev/null 2>/dev/null|openssl x509 -outform PEM > /root/ldapserver-cert.crt
+
+#For example:
+openssl s_client -showcerts -connect c97721v.fyre.com:636 </dev/null 2>/dev/null|openssl x509 -outform PEM > /root/ldapserver-cert.crt
+```
+
+- Create trusted secret for the certificate file
+
+```
+#For example:
+kubectl create secret generic ida-trusted-secret --from-file=ldap.crt=/root/ldapserver-cert.crt
+
+```
+
+Step 5. Preparing the IDA storage.
+
+- **For Demo Purpose**
+
+  IDA will automatically create the storage, and deleting ida instance will also remove it.
+
+- **For Production Purpose**
+
+  Please use below command to create a storage for IDA.
+
+
+  ```
+  chmod +x scripts/createDataPVC.sh
+  scripts/createDataPVC.sh -n <pvc_name> -s <storage_class> -m <access_mode> -c <stoage_capacity>
+  
+  # Get the storage class name of your cluster
+  kubectl get sc
+  
+  #Example of using default configurations(Name： ida-data-pvc, AccessMode: ReadWriteMany, Capacity: 20Gi):
+  scripts/createDataPVC.sh -s managed-nfs-storage
+  ```
+
+  **Notes:** If you want to run multiple pods of IDA, please make sure the storage access mode is **ReadWriteMany**.
+
+Step 6. Preparing Database.
 
 - For Demo Purpose (Using Embedded Database)
 
@@ -224,11 +293,9 @@ kubectl config set-context --current --namespace=ida
 
 Step 2. Deploying an IDA Instance.
 
-**Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](docs/certificates-configuration.md).
-
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert>
+scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --data-pvc-name <data_pvc_name> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --tls-cert-secret <tls_cert_secret> --trusted-cert-secret <trusted_cert_secret>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h
@@ -236,14 +303,14 @@ scripts/deployIDA.sh -h
 # Get the storage class name of your cluster
 kubectl get sc
 
-#Example of using private docker registry and embedded database:
+#Example of using private docker registry, embedded database and PVC:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage
 
-#Example of using private docker registry and external on-container database:
+#Example of using private docker registry, external on-container database and embedded PVC:
 scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential
 
-#Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
+#Example of using private docker registry, external database and existing PVC:
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential
 ```
 
 If success, you will see the log from your console

@@ -20,8 +20,8 @@ cat <<EOF
         -t|--installation-type         - Optional: Installation type (Options: embedded or external)
         -d|--db-type                   - Optional: IDA Database type, the default is postgres (Options: postgres, mysql, db2 or oracle.)
         -s|--pull-secret               - Optional: Image pull secret (Default is empty)
-        -c|--tls-cert                  - Optional: Custom Liberty SSL certificate path (For example: /root/ida-operator/ida.pem), this pem file should include the certificate and private key.
-        -l|--ldap-tls-cert             - Optional: LDAPS server certificate path (For example: /root/ida-operator/ldap.crt)
+        -c|--tls-cert-secret           - Optional: The IDA tls certificate secret name.
+        -l|--trusted-cert-secret       - Optional: The external service(eg: LDAP) certificate secret name.
         --release-name                 - Optional: IDA instance release name, the default value is 'idadeploy'
         --data-pvc-name                - Optional: IDA data pvc name (Required when you want use the existing IDA data pvc)
         --db-pvc-name                  - Optional: IDA embedded database pvc name (Required when the insallation type is embedded and you want use the existing IDA database pvc)
@@ -34,18 +34,14 @@ cat <<EOF
         --db-server-name               - Optional: IDA external database server host name (Required when the insallation type is external and the database is NOT oracle)
         --db-schema                    - Optional: IDA external database current schema
         --db-credential-secret         - Optional: The secret for IDA external database username and password (Required when the insallation type is external)
-        --cpu-request                  - Optional: CPU resource requests for the IDA instance, the default is 2
-        --memory-request               - Optional: Memory resource requests for the IDA instance, the default is 4Gi
-        --cpu-limit                    - Optional: CPU resource limits for the IDA instance, the default is 4
-        --memory-limit                 - Optional: Memory resource limits for the IDA instance , the default is 8Gi
-        --network-type                 - Optional: Network type for the IDA instance(route, loadBalancer).
+        --network-type                 - Optional: Network type for the IDA instance(Options: route or ingress).
 
 
  Example of using private docker registry and embedded database:
  scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres --storage-class managed-nfs-storage
 
  Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
- scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi
+ scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name <DB_HOST> --db-name idaweb --db-port 5432  --db-credential-secret ida-external-db-credential
 
 EOF
 }
@@ -63,7 +59,7 @@ CREATE_DB_CM=true
 # Read input parameters
 # Specify command line arguments and suboptions here
 shortopt=hi:r:t:d:s:c:l:
-longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert:,ldap-tls-cert:,embedded-db-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,cpu-request:,memory-request:,cpu-limit:,memory-limit:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,network-type:,ignore-db-configmap
+longopt=help:,image:,replicas:,installation-type:,db-type:,pull-secret:,tls-cert-secret:,trusted-cert-secret:,embedded-db-image:,db-url:,db-name:,db-port:,db-server-name:,db-schema:,db-credential-secret:,data-pvc-name:,db-pvc-name:,storage-class:,data-storage-capacity:,release-name:,network-type:,ignore-db-configmap
 
 getopt -T > /dev/null
 if [ $? -eq 4 ]; then
@@ -110,15 +106,15 @@ while true ; do
                 "") shift 2 ;;
                 *) SECRET=$2 ; shift 2 ;;
             esac ;;
-        -c|--tls-cert)
+        -c|--tls-cert-secret)
             case "$2" in
                 "") shift 2 ;;
-                *) CERT_PATH=$2 ; shift 2 ;;
+                *) TLS_CERT_SECRET=$2 ; shift 2 ;;
             esac ;;
-        -l|--ldap-tls-cert)
+        -l|--trusted-cert-secret)
             case "$2" in
                 "") shift 2 ;;
-                *) LDAP_CERT_PATH=$2 ; shift 2 ;;
+                *) TRUSTED_CERT_SECRET=$2 ; shift 2 ;;
             esac ;;
         --release-name)
             case "$2" in
@@ -180,26 +176,6 @@ while true ; do
                 "") shift 2 ;;
                 *) DATABASE_CREDENTIAL_SECRET=$2 ; shift 2 ;;
             esac ;;
-        --cpu-request)
-            case "$2" in
-                "") shift 2 ;;
-                *) CPU_REQUEST=$2 ; shift 2 ;;
-            esac ;;
-        --memory-request)
-            case "$2" in
-                "") shift 2 ;;
-                *) MEMORY_REQUEST=$2 ; shift 2 ;;
-            esac ;;
-        --cpu-limit)
-            case "$2" in
-                "") shift 2 ;;
-                *) CPU_LIMIT=$2 ; shift 2 ;;
-            esac ;;
-        --memory-limit)
-            case "$2" in
-                "") shift 2 ;;
-                *) MEMORY_LIMIT=$2 ; shift 2 ;;
-            esac ;;
         --network-type)
             case "$2" in
                 "") shift 2 ;;
@@ -241,15 +217,8 @@ then
     select_installation_type
 fi
 
-if [[ ${INSTALLATION_TYPE} == "embedded" ]]; then
-    [ -f ./deploycr.yaml ] && rm ./deploycr.yaml
-    cp ./descriptors/patterns/ida-cr-demo-embedded.yaml ./deploycr.yaml
-elif [[ ${INSTALLATION_TYPE} == "external" ]]
-then
-    [ -f ./deploycr.yaml ] && rm ./deploycr.yaml
-    cp ./descriptors/patterns/ida-cr-demo-external.yaml ./deploycr.yaml
-fi
-
+[ -f ./deploycr.yaml ] && rm ./deploycr.yaml
+cp ./descriptors/patterns/ida-cr-${INSTALLATION_TYPE}.yaml ./deploycr.yaml
 
 if [ ! -z ${IMAGEREGISTRY} ]; then
 # Change the location of the image
@@ -278,17 +247,16 @@ echo "Set replicas to $REPLICAS"
 cat ./deploycr.yaml | sed -e "s|replicas: 1|replicas: $REPLICAS |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
-if [ ! -z ${CERT_PATH} ]; then
+if [ ! -z ${TLS_CERT_SECRET} ]; then
 # Change Liberty SSL certificate
-echo "Custom Liberty SSL Certificate path: $CERT_PATH"
-CERT_ENCODED=$(base64 -w 0 $CERT_PATH)
-cat ./deploycr.yaml | sed -e "s|tlsCert:|tlsCert: $CERT_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+echo "Set TLS certificate secret name to $TLS_CERT_SECRET"
+cat ./deploycr.yaml | sed -e "s|tlsCertSecret:|tlsCertSecret: $TLS_CERT_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
-if [ ! -z ${LDAP_CERT_PATH} ]; then
+if [ ! -z ${TRUSTED_CERT_SECRET} ]; then
 # set LDAP SSL certificate
-LDAP_CERT_ENCODED=$(base64 -w 0 $LDAP_CERT_PATH)
-cat ./deploycr.yaml | sed -e "s|ldapCert:|ldapCert: $LDAP_CERT_ENCODED |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
+echo "Set external service certificate secret name to $TRUSTED_CERT_SECRET"
+cat ./deploycr.yaml | sed -e "s|trustedCertSecret:|trustedCertSecret: $TRUSTED_CERT_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${RELEASE_NAME} ]; then
@@ -330,31 +298,6 @@ if [[ ${INSTALLATION_TYPE} == "external" ]]; then
         fi
     fi
     cat ./deploycr.yaml | sed -e "s|databaseCredentialSecret: ida-external-db-credential|databaseCredentialSecret: $DATABASE_CREDENTIAL_SECRET |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-fi
-
-
-if [ ! -z ${CPU_REQUEST} ]; then
-# Change CPU resource requests 
-echo "CPU resource requests: $CPU_REQUEST"
-cat ./deploycr.yaml | sed -e "s|cpuRequest: 2|cpuRequest: $CPU_REQUEST |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-fi
-
-if [ ! -z ${MEMORY_REQUEST} ]; then
-# Change Memory resource requests
-echo "Memory resource requests: $MEMORY_REQUEST"
-cat ./deploycr.yaml | sed -e "s|memoryRequest: 4Gi|memoryRequest: $MEMORY_REQUEST |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-fi
-
-if [ ! -z ${CPU_LIMIT} ]; then
-# Change CPU resource limits
-echo "CPU resource limits: $CPU_LIMIT"
-cat ./deploycr.yaml | sed -e "s|cpuLimit: 4|cpuLimit: $CPU_LIMIT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
-fi
-
-if [ ! -z ${MEMORY_LIMIT} ]; then
-# Change Memory resource limits
-echo "Memory resource limits: $MEMORY_LIMIT"
-cat ./deploycr.yaml | sed -e "s|memoryLimit: 8Gi|memoryLimit: $MEMORY_LIMIT |g" > ./deploycrsav.yaml ;  mv ./deploycrsav.yaml ./deploycr.yaml
 fi
 
 if [ ! -z ${NETWORK_TYPE} ]; then

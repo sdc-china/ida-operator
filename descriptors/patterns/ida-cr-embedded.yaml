@@ -12,6 +12,13 @@ spec:
       image: postgres:14.3
       imagePullPolicy: Always
       imagePullSecrets:
+      resources:
+        requests:
+          cpu: 1
+          memory: 1Gi
+        limits:
+          cpu: 2
+          memory: 2Gi
       storage:
         existingDBPVCName: 
     external:
@@ -23,14 +30,24 @@ spec:
     imagePullSecrets:
     replicas: 1
     resources:
-      cpuLimit: 2
-      cpuRequest: 1
-      memoryLimit: 4Gi
-      memoryRequest: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        cpu: 2
+        memory: 4Gi
     storage:
       storageCapacity: 5Gi
       existingDataPVCName:
-    tlsCert:
-    ldapCert:
+    initContainer:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    tlsCertSecret:
+    trustedCertSecret:
     network:
       type:  

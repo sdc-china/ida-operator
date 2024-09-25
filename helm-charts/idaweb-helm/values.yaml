@@ -1,0 +1,87 @@
+# IDA chart values.
+shared:
+  storageClassName: managed-nfs-storage
+
+idaDatabase:
+  # Database type, the value could be mysql, postgres, db2, oracle
+  type: postgres
+  internal:
+    enabled: true
+    image: postgres:14.3
+    imagePullPolicy: Always
+    imagePullSecrets:
+    resources:
+      requests:
+        cpu: 1
+        memory: 1Gi
+      limits:
+        cpu: 2
+        memory: 2Gi
+    storage:
+      storageCapacity: 5Gi
+      # The existing pvc if the dynamic pvc by storage class is not available
+      existingDBPVCName:
+    # The configmap is used for init sql when start a db container.
+    configMapVolume: ida-embedded-db-configmap
+  external:
+    enabled: false
+    # For oracle only
+    databaseUrl:
+    databaseName:
+    databasePort:
+    databaseServerName:
+    currentSchema:
+    # The secret for database username and password
+    databaseCredentialSecret: ida-external-db-credential
+
+selenium:
+  imagePullSecrets:
+  hub:
+    image: selenium/hub:4.10.0
+  firefoxNode:
+    image: selenium/node-firefox:4.10.0
+  chromeNode:
+    image: selenium/node-chrome:4.10.0
+  edgeNode:
+    image: selenium/node-edge:4.10.0
+
+operator:
+  image: ida-operator:24.0.7
+
+idaWeb:
+  image: ida:24.0.7
+  imagePullPolicy: Always
+  imagePullSecrets:
+  replicas: 1
+  resources:
+    requests:
+      cpu:
+      memory:
+    limits:
+      cpu:
+      memory:
+  storage:
+    storageCapacity: 5Gi
+    # The existing PVC is used for ida data and database drivers
+    existingDataPVCName: 
+  initContainer:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  jvmArgs:
+  tlsCertSecret:
+  trustedCertSecret:
+  serviceType: ClusterIP
+  serviceAccountName: default
+  serverXmlConfig:
+  network:
+    ## The network type can be route or ingress
+    type:
+    hostname:
+    ingress:
+      className:
+      annotations: {}

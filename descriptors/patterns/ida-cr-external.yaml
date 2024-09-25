@@ -26,14 +26,24 @@ spec:
     imagePullSecrets:
     replicas: 1
     resources:
-      cpuLimit: 4
-      cpuRequest: 2
-      memoryLimit: 8Gi
-      memoryRequest: 4Gi
+      requests:
+        cpu: 2
+        memory: 4Gi
+      limits:
+        cpu: 4
+        memory: 8Gi
     storage:
       storageCapacity: 5Gi
       existingDataPVCName:
-    tlsCert:
-    ldapCert:
+    initContainer:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    tlsCertSecret:
+    trustedCertSecret:
     network:
       type:  

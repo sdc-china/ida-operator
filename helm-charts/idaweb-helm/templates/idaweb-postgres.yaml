@@ -1,0 +1,115 @@
+{{- if and .Values.idaDatabase.internal.enabled (eq .Values.idaDatabase.type "postgres")}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: "{{.Release.Name}}-ida-db"
+  name: "{{.Release.Name}}-ida-db"
+spec:
+  ports:
+  - name: "export-port"
+    port: 5432
+    targetPort: 5432
+  selector:
+    app: "{{.Release.Name}}-ida-db"
+  type: ClusterIP
+
+---
+
+{{- if not .Values.idaDatabase.internal.storage.existingDBPVCName}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: "{{.Release.Name}}-ida-db"
+  name: "{{.Release.Name}}-ida-db-pvc"
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "{{.Values.shared.storageClassName}}"
+  resources:
+    requests:
+      storage: "{{.Values.idaDatabase.internal.storage.storageCapacity}}"
+{{- end}}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: "{{.Release.Name}}-ida-db"
+  name: "{{.Release.Name}}-ida-db"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{.Release.Name}}-ida-db"
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: "{{.Release.Name}}-ida-db"
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: "idaweb"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "password"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        image: {{.Values.idaDatabase.internal.image}}
+        name: "{{.Release.Name}}-ida-db"
+        imagePullPolicy: {{.Values.idaDatabase.internal.imagePullPolicy}}
+        ports:
+        - containerPort: 5432
+        resources:
+          limits:
+            cpu: "{{.Values.idaDatabase.internal.resources.limits.cpu}}"
+            memory: "{{.Values.idaDatabase.internal.resources.limits.memory}}"
+          requests:
+            cpu: "{{.Values.idaDatabase.internal.resources.requests.cpu}}"
+            memory: "{{.Values.idaDatabase.internal.resources.requests.memory}}"
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            {{- if .Values.idaDatabase.internal.storage.existingDBPVCName}}
+            name: "{{.Values.idaDatabase.internal.storage.existingDBPVCName}}"
+            {{- else}}
+            name: "{{.Release.Name}}-ida-db-pvc"
+            {{- end}}
+          - mountPath: /docker-entrypoint-initdb.d
+            name: "{{.Values.idaDatabase.internal.configMapVolume}}"
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 20
+          periodSeconds: 3
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      restartPolicy: Always
+      {{- if .Values.idaDatabase.internal.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{.Values.idaDatabase.internal.imagePullSecrets}}
+      {{- end}}
+      volumes:
+      {{- if .Values.idaDatabase.internal.storage.existingDBPVCName}}
+      - name: "{{.Values.idaDatabase.internal.storage.existingDBPVCName}}"
+        persistentVolumeClaim:
+          claimName: "{{.Values.idaDatabase.internal.storage.existingDBPVCName}}"
+      {{- else}}
+      - name: "{{.Release.Name}}-ida-db-pvc"
+        persistentVolumeClaim:
+          claimName: "{{.Release.Name}}-ida-db-pvc"
+      {{- end}}
+      - name: "{{.Values.idaDatabase.internal.configMapVolume}}"
+        configMap:
+          name: "{{.Values.idaDatabase.internal.configMapVolume}}"
+{{- end}}

@@ -1,24 +1,38 @@
 # Installing the IDA operator on OpenShift
 
-## Prerequisite
+Planning for IDA deployment according to [System Requirements](docs/system-requirements.md).
 
-Log in to your cluster by either of the two ways.
+For other Kubernetes platform please refer to [README_K8S](README_K8S.md).
+
+## Before you begin
+
+Step 1. Log in to your cluster by either of the two ways.
 
 - For installer with cluster-admin role
 
 ```
-#Using the OpenShift CLI:
-
+#Login cluster admin
 oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 ```
 
 - For installer without cluster-admin role
 
-Please refer to the steps in [Installing IDA without cluster-admin role](docs/non-cluster-admin-install.md#for-openshift)
+```
+#Create service account in target project by cluster admin
+oc project <project_name>
+oc create sa ida-installer-sa
+oc apply -f ./docs/rbac/ida-installer.yml
+oc adm policy add-cluster-role-to-user ida-installer -z ida-installer-sa
 
-## Before you begin
+#Get service account token
+TOKENNAME=`oc describe  sa/ida-installer-sa  | grep Tokens |  awk '{print $2}'`
+TOKEN=`oc get secret $TOKENNAME -o jsonpath='{.data.token}'| base64 --decode`
 
-Step 1. Log in to your docker registry
+#Login service account
+oc login --token=$TOKEN --server=<OCP_API_SERVER>
+```
+
+Step 2. Log in to your docker registry
 
 
 ```
@@ -27,28 +41,26 @@ REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
 ```
 
-Step 2. Download IDA operator scripts
+Step 3. Download IDA operator scripts
 
 ```
 git clone https://github.com/sdc-china/ida-operator.git
 cd ida-operator
 ```
 
-Step 3. Load IDA docker images
+Step 4. Load IDA docker images
 
-  Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
+Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
 
-    ```
-    chmod +x scripts/loadImages.sh
-    scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
-    
-    #Example of using private docker registry:
-    scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
-    ```
+```
+chmod +x scripts/loadImages.sh
+scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
+  
+#Example of using private docker registry:
+scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
+```
 
 ## IDA Operator
-
-By default, IDA operator watches and manages resources in a single Namespace. You need to change the operator scope to cluster-scoped when operator installation if you want IDA Operator watches resources that are created in any Namespace.
 
 ### Installing IDA Operator
 
@@ -167,13 +179,68 @@ Step 2. Preparing private docker registry secret
 oc create secret docker-registry ida-docker-secret --docker-server=<docker_registry> --docker-username=<docker_username> --docker-password=<docker_password>
 ```
 
-Step 3. Preparing Database.
+Step 3. Preparing signed SSL certificate secret (Optional)
 
-- For Demo Purpose (Using Embedded Database)
+By default, IDA uses self-signed SSL certification. You can also prepare your own signed SSL certifications which includes the files "tls.crt" and tls.key", then create a secret for it.
+
+```
+#For example:
+oc create secret tls ida-tls-secret --cert tls.crt --key tls.key
+
+```
+
+Step 4. Preparing LDAPS SSL certificate secret (Optional)
+
+If you want to integrate with LDAP server by the LDAPS protocol, then you need to add the LDAPS SSL certificate into IDA trusted certification list.
+
+- You can get the LDAPS certificate file by infrastructure team or export by LDAP server URL.
+
+```
+openssl s_client -showcerts -connect <LDAPS server host>:<LDAP server port> </dev/null 2>/dev/null|openssl x509 -outform PEM > /root/ldapserver-cert.crt
+
+#For example:
+openssl s_client -showcerts -connect c97721v.fyre.com:636 </dev/null 2>/dev/null|openssl x509 -outform PEM > /root/ldapserver-cert.crt
+```
+
+- Create trusted secret for the certificate file
+
+```
+#For example:
+oc create secret generic ida-trusted-secret --from-file=ldap.crt=/root/ldapserver-cert.crt
+
+```
+
+Step 5. Preparing the IDA storage.
+
+- **For Demo Purpose**
+
+  IDA will automatically create the storage, and deleting ida instance will also remove it.
+
+- **For Production Purpose**
+
+  Please use below command to create a storage for IDA.
+
+
+  ```
+  chmod +x scripts/createDataPVC.sh
+  scripts/createDataPVC.sh -n <pvc_name> -s <storage_class> -m <access_mode> -c <stoage_capacity>
+  
+  # Get the storage class name of your cluster
+  oc get sc
+  
+  #Example of using default configurations(Name： ida-data-pvc, AccessMode: ReadWriteMany, Capacity: 20Gi):
+  scripts/createDataPVC.sh -s managed-nfs-storage
+  ```
+
+  **Notes:** If you want to run multiple pods of IDA, please make sure the storage access mode is **ReadWriteMany**.
+
+Step 6. Preparing Database.
+
+- **For Demo Purpose** (Using Embedded Database)
 
   IDA will create an embedded db, and deleting ida instance will also remove the embedded db.
 
-- For Product Purpose (Using External Database)
+- **For Production Purpose** (Using External Database)
 
   Step 1. Configuring your database by either of the two ways.
   - [Create on-prem database](https://sdc-china.github.io/IDA-doc/installation/installation-database-installation-and-configuration.html).
@@ -203,38 +270,27 @@ oc project <ida_project_name>
 #For example:
 oc project ida
 ```
-Step 2. Preparing the IDA Data storage.
 
-```
-chmod +x scripts/createDataPVC.sh
-scripts/createDataPVC.sh -s <storage_class>
-
-# Get the storage class name of your cluster
-oc get sc
-
-#For example:
-scripts/createDataPVC.sh -s managed-nfs-storage
-```
-
-Step 3. Deploying an IDA Instance.
-
-**Notes:** If you want to configure SSL certificate for IDA, or add trusted LDAPS certificate, please prepare the certification files according to the steps in [Certificates Configuration](docs/certificates-configuration.md).
+Step 2. Deploying an IDA Instance.
 
 ```
 chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --data-pvc-name <existing_data_pvc> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --cpu-request <cpu_request> --memory-request <memory_request> --cpu-limit <cpu_limit> --memory-limit <memory_limit> --tls-cert <tls_cert> --network-type <network_type>
+scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --data-pvc-name <data_pvc_name> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --tls-cert-secret <tls_cert_secret> --trusted-cert-secret <trusted_cert_secret> --network-type <network_type>
 
 #Get help of deployIDA.sh
 scripts/deployIDA.sh -h
 
-#Example of using private docker registry and embedded database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --network-type route
+# Get the storage class name of your cluster
+oc get sc
 
-#Example of using private docker registry and external on-container database:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential --network-type route
+#Example of using private docker registry, embedded database and PVC:
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --network-type route
 
-#Example of using private docker registry and external database with IDA instance resource requests and limits configuration:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --cpu-request 2 --memory-request 4Gi --cpu-limit 4 --memory-limit 8Gi --network-type route
+#Example of using private docker registry, external on-container database and embedded PVC:
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential --network-type route
+
+#Example of using private docker registry, external database and existing PVC:
+scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --network-type route
 ```
 
 If success, you will see the log from your console
@@ -243,7 +299,7 @@ If success, you will see the log from your console
 Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
 ```
 
-Step 4. Monitor the pod until it shows a STATUS of "Running":
+Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w

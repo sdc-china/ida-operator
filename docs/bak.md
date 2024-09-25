@@ -36,6 +36,51 @@ spec:
     requests.memory: 26Gi
 ```
 
+## LimitRange
+
+```
+kind: LimitRange
+apiVersion: v1
+metadata:
+  name: project-limits
+spec:
+  limits:
+    - type: Container
+      max:
+        cpu: '4'
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 256Mi
+      default:
+        cpu: '1'
+        memory: 2Gi
+      defaultRequest:
+        cpu: '1'
+        memory: 2Gi
+    - type: Pod
+      max:
+        cpu: '4'
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 256Mi
+    - type: openshift.io/Image
+      max:
+        storage: 5Gi
+    - type: openshift.io/ImageStream
+      max:
+        openshift.io/image-tags: '30'
+        openshift.io/images: '30'
+    - type: PersistentVolumeClaim
+      max:
+        storage: 20Gi
+      min:
+        storage: 1Gi
+
+```
+
+
 ## Replace IDA JDBC drivers (Deprecated)
 ```
 IDA_POD_NAME=$(oc get pod | grep ida-web | head -n 1 | awk '{print$1}')
