@@ -1,38 +1,53 @@
 # IDA chart values.
 shared:
-  storageClassName: managed-nfs-storage
+  # Storage class if using dynamic provisioning. E.g., managed-nfs-storage.
+  storageClassName: 
 
 idaDatabase:
-  # Database type, the value could be mysql, postgres, db2, oracle
+  # Database type. The possible values are "mysql", "postgres", "db2" and "oracle".
   type: postgres
   internal:
-    enabled: true
+    # Enable internal database for demo purpose.
+    enabled: false
+    # Image URL for internal database.
     image: postgres:14.3
+    # Image pull policy for internal database.
     imagePullPolicy: Always
+    # Image pull secrets for internal database.
     imagePullSecrets:
     resources:
       requests:
+        # Minimum number of CPUs for internal database.
         cpu: 1
+        # Minimum amount of memory required for internal database.
         memory: 1Gi
       limits:
+        # Maximum number of CPUs allowed for internal database.
         cpu: 2
+        # Maximum amount of memory allowed for internal database.
         memory: 2Gi
     storage:
+      # The storage capacity for persisting data, if using dynamic provisioning.
       storageCapacity: 5Gi
-      # The existing pvc if the dynamic pvc by storage class is not available
+      # PVC for internal database if you are not using dynamic provisioning.
       existingDBPVCName:
     # The configmap is used for init sql when start a db container.
-    configMapVolume: ida-embedded-db-configmap
+    configMapVolume: ida-db-configmap
   external:
-    enabled: false
-    # For oracle only
+    # Enable external database for production purpose.
+    enabled: true
+    # The JDBC URL. Only Oracle is supported. E.g., jdbc:oracle:thin:@serverName:port:databaseName
     databaseUrl:
+    # Database instance name, for database except Oracle. E.g., ida
     databaseName:
+    # Database port, for database except Oracle. E.g., 5432
     databasePort:
+    # Database server name in the form of either a fully qualified domain name (FQDN) or an IP address, for database except Oracle. E.g., example.postgre.com
     databaseServerName:
+    # Database schema name. This parameter is optional. E.g., databaseschema
     currentSchema:
-    # The secret for database username and password
-    databaseCredentialSecret: ida-external-db-credential
+    # Secret name that contains the DATABASE_USER and DATABASE_PASSWORD keys.
+    databaseCredentialSecret: ida-db-credential
 
 selenium:
   imagePullSecrets:
@@ -46,40 +61,55 @@ selenium:
     image: selenium/node-edge:4.10.0
 
 operator:
-  image: ida-operator:24.0.7
+  image: ida-operator:24.0.8
 
 idaWeb:
-  image: ida:24.0.7
+    # Image URL
+  image: ida:24.0.8
+    # Image pull policy
   imagePullPolicy: Always
+    # Image Pull secrets
   imagePullSecrets:
+    # Number of IDA pods.
   replicas: 1
   resources:
     requests:
+      # Minimum number of CPUs for IDA container.
       cpu:
+      # Minimum amount of memory required for IDA container.
       memory:
     limits:
+      # Maximum number of CPUs allowed for IDA container.
       cpu:
+      # Maximum amount of memory allowed for IDA container.
       memory:
   storage:
+    # The storage capacity for persisting data, if using dynamic provisioning.
     storageCapacity: 5Gi
-    # The existing PVC is used for ida data and database drivers
+    #The existing PVC for the persisted IDA data. E.g., ida-data-pvc
     existingDataPVCName: 
   initContainer:
     resources:
       requests:
+        # Minimum number of CPUs for IDA init containers.
         cpu: 100m
+        # Minimum amount of memory required for IDA init containers.
         memory: 256Mi
       limits:
+        # Maximum number of CPUs allowed for IDA init containers.
         cpu: 200m
+        # Maximum amount of memory allowed for IDA init containers.
         memory: 512Mi
   jvmArgs:
+  # Secret name that contains the files tls.crt and tls.key for IDA. E.g., ida-tls-secret.
   tlsCertSecret:
+  # Secret name that contains trusted certificate files. E.g., ida-trusted-secret.
   trustedCertSecret:
   serviceType: ClusterIP
   serviceAccountName: default
   serverXmlConfig:
   network:
-    ## The network type can be route or ingress
+    # IDA service expose type. The possible values are "route" and "ingress".
     type:
     hostname:
     ingress:

@@ -72,10 +72,10 @@ rm -rf tmp && mkdir tmp && sudo chown 1001:0 tmp
 ${cli_cmd} run -v $(pwd)/tmp:/data --rm $IMAGEREGISTRY cp -r /opt/ol/wlp/sqls /data
 
 if [[ ${DATABASE} == "postgres" ]]; then
-    ${KUBE_CMD} create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql --dry-run=client -o yaml | ${KUBE_CMD} apply -f -
+    ${KUBE_CMD} create configmap ida-db-configmap --from-file=./tmp/sqls/postgres/2-data-postgres.sql --from-file=./tmp/sqls/postgres/1-schema-postgres.sql --dry-run=client -o yaml | ${KUBE_CMD} apply -f -
 elif [[ ${DATABASE} == "mysql" ]]
 then
-    ${KUBE_CMD} create configmap ida-embedded-db-configmap --from-file=./tmp/sqls/mysql/2-data-mysql.sql --from-file=./tmp/sqls/mysql/1-schema-mysql.sql --dry-run=client -o yaml | ${KUBE_CMD} apply -f -
+    ${KUBE_CMD} create configmap ida-db-configmap --from-file=./tmp/sqls/mysql/2-data-mysql.sql --from-file=./tmp/sqls/mysql/1-schema-mysql.sql --dry-run=client -o yaml | ${KUBE_CMD} apply -f -
 fi
 
 echo -e "\033[32mThe Configmap have been successfully created.\033[0m"

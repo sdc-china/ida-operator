@@ -44,4 +44,4 @@ fi
 
 ${KUBE_CMD} apply -f ./deploydbpvc.yaml
 
-echo -e "\033[32mThe Embedded DB PVC have been successfully created. Monitor the pvc status with '${KUBE_CMD} get pvc -w'.\033[0m"
+echo -e "\033[32mThe Demo DB PVC have been successfully created. Monitor the pvc status with '${KUBE_CMD} get pvc -w'.\033[0m"

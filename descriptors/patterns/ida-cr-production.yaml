@@ -1,0 +1,74 @@
+apiVersion: sdc.ibm.com/v1
+kind: IDACluster
+metadata:
+  name: idadeploy
+spec:
+  shared:
+    # Storage class if using dynamic provisioning. E.g., managed-nfs-storage.
+    storageClassName: 
+  idaDatabase:
+    # Database type. The possible values are "mysql", "postgres", "db2" and "oracle".
+    type: postgres
+    internal:
+      # Enable internal database for demo purpose.
+      enabled: false
+    external:
+      # Enable external database for production purpose.
+      enabled: true
+      # The JDBC URL. Only Oracle is supported. E.g., jdbc:oracle:thin:@serverName:port:databaseName
+      databaseUrl:
+      # Database instance name, for database except Oracle. E.g., ida
+      databaseName:
+      # Database port, for database except Oracle. E.g., 5432
+      databasePort:
+      # Database server name in the form of either a fully qualified domain name (FQDN) or an IP address, for database except Oracle. E.g., example.postgre.com
+      databaseServerName:
+      # Database schema name. This parameter is optional. E.g., databaseschema
+      currentSchema:
+      # Secret name that contains the DATABASE_USER and DATABASE_PASSWORD keys.
+      databaseCredentialSecret: ida-db-credential
+
+  idaWeb:
+    # Image URL
+    image: <IDA_IMAGE>
+    # Image pull policy
+    imagePullPolicy: Always
+    # Image Pull secrets
+    imagePullSecrets:
+    # Number of IDA pods.
+    replicas: 1
+    resources:
+      requests:
+        # Minimum number of CPUs for IDA container.
+        cpu: 2
+        # Minimum amount of memory required for IDA container.
+        memory: 4Gi
+      limits:
+        # Maximum number of CPUs allowed for IDA container.
+        cpu: 4
+        # Maximum amount of memory allowed for IDA container.
+        memory: 8Gi
+    storage:
+      # The storage capacity for persisting data, if using dynamic provisioning.
+      storageCapacity: 20Gi
+      #The existing PVC for the persisted IDA data. E.g., ida-data-pvc
+      existingDataPVCName:
+    initContainer:
+      resources:
+        requests:
+          # Minimum number of CPUs for IDA init containers.
+          cpu: 100m
+          # Minimum amount of memory required for IDA init containers.
+          memory: 256Mi
+        limits:
+          # Maximum number of CPUs allowed for IDA init containers.
+          cpu: 200m
+          # Maximum amount of memory allowed for IDA init containers.
+          memory: 512Mi
+    # Secret name that contains the files tls.crt and tls.key for IDA. E.g., ida-tls-secret.
+    tlsCertSecret:
+    # Secret name that contains trusted certificate files. E.g., ida-trusted-secret.
+    trustedCertSecret:
+    network:
+      # IDA service expose type. The possible values are "route" and "ingress".
+      type:  

@@ -47,6 +47,6 @@ You can find the DB internal service url by command `echo $(oc get svc | grep pg
 #Switch to your IDA Instance project:
 oc project <ida_project_name>
   
-oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
+oc create secret generic ida-db-credential --from-literal=DATABASE_USER=postgres \
 --from-literal=DATABASE_PASSWORD=password
 ```

@@ -21,7 +21,7 @@ oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
 #Create service account in target project by cluster admin
 oc project <project_name>
 oc create sa ida-installer-sa
-oc apply -f ./docs/rbac/ida-installer.yml
+oc apply -f ./descriptors/rbac/ida-installer.yml
 oc adm policy add-cluster-role-to-user ida-installer -z ida-installer-sa
 
 #Get service account token
@@ -57,7 +57,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
   
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-24.0.7.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.8.tgz -r $REGISTRY_HOST/ida
 ```
 
 ## IDA Operator
@@ -87,10 +87,10 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
 
 #Example of namespace-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7 -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8 -s ida-operator-secret
 
 #Example of cluster-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7 -c Cluster -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8 -c Cluster -s ida-operator-secret
 
 ```
 
@@ -143,7 +143,7 @@ chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
 #Example of using private docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -236,9 +236,9 @@ Step 5. Preparing the IDA storage.
 
 Step 6. Preparing Database.
 
-- **For Demo Purpose** (Using Embedded Database)
+- **For Demo Purpose** (Using Internal Database)
 
-  IDA will create an embedded db, and deleting ida instance will also remove the embedded db.
+  IDA will create an internal db, and deleting ida instance will also remove the db.
 
 - **For Production Purpose** (Using External Database)
 
@@ -252,11 +252,11 @@ Step 6. Preparing Database.
   #Switch to your IDA Instance project:
   oc project <ida_project_name>
 
-  oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=<DATABASE_USER> \
+  oc create secret generic ida-db-credential --from-literal=DATABASE_USER=<DATABASE_USER> \
   --from-literal=DATABASE_PASSWORD=<DATABASE_PASSWORD>
 
   #Example:
-  oc create secret generic ida-external-db-credential --from-literal=DATABASE_USER=postgres \
+  oc create secret generic ida-db-credential --from-literal=DATABASE_USER=postgres \
   --from-literal=DATABASE_PASSWORD=password
   ```
 
@@ -273,31 +273,62 @@ oc project ida
 
 Step 2. Deploying an IDA Instance.
 
-```
-chmod +x scripts/deployIDA.sh
-scripts/deployIDA.sh -i <ida_image> -r <replicas_number> -t <installation_type> -d <database_type> -s <image_pull_secret> --storage-class <storage_class> --data-pvc-name <data_pvc_name> --db-server-name <external_db_server> --db-name <external_db_name> --db-port <external_db_port> --db-schema <external_db_schema> --db-credential-secret <external_db_credential_secret_name> --tls-cert-secret <tls_cert_secret> --trusted-cert-secret <trusted_cert_secret> --network-type <network_type>
+A custom resource YAML is a configuration file that describes an instance of a deployment and includes parameters to install IDA. Each time that you need to make an update or modification, you must apply the changes to your deployments.
 
-#Get help of deployIDA.sh
-scripts/deployIDA.sh -h
+- **Configuring IDA Custom Resource**
 
-# Get the storage class name of your cluster
-oc get sc
+  Please check and edit the IDA custom resource (CR) file before you apply it to the operator, and you can find the IDA CR template at **descriptors/patterns/ida-cr-production.yaml**.
 
-#Example of using private docker registry, embedded database and PVC:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t embedded -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --network-type route
+  - **Configuring shared configuration parameters**
 
-#Example of using private docker registry, external on-container database and embedded PVC:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --storage-class managed-nfs-storage --db-server-name db.ida-db.svc.cluster.local --db-name idaweb --db-port 5432 --db-credential-secret ida-external-db-credential --network-type route
+  Parameters | Description
+  --- | --------------
+  shared.storageClassName | Storage class if using dynamic provisioning. E.g., managed-nfs-storage
+  
+  - **Configuring database parameters**
+  
+  Parameters | Description
+  --- | --------------
+  idaDatabase.type | Database type. The possible values are "mysql", "postgres", "db2" and "oracle". Internal database only supports "mysql" and "postgres".
+  idaDatabase.internal.enabled | Enable internal database for demo purpose. The default value is **false**.
+  idaDatabase.external.enabled | Enable external database for production purpose. The default value is **true**.
+  idaDatabase.external.databaseUrl | The JDBC URL. Only Oracle is supported. E.g., jdbc:oracle:thin:@serverName:port:databaseName
+  idaDatabase.external.databaseName | Database instance name, for database except Oracle. E.g., ida 
+  idaDatabase.external.databasePort | Database port, for database except Oracle. E.g., 5432 
+  idaDatabase.external.databaseServerName | Database server name in the form of either a fully qualified domain name (FQDN) or an IP address, for database except Oracle. E.g., example.postgre.com 
+  idaDatabase.external.currentSchema | Database schema name. This parameter is optional. E.g., databaseschema 
+  idaDatabase.external.databaseCredentialSecret | Secret name that contains the **DATABASE_USER** and **DATABASE_PASSWORD** keys. E.g., ida-db-credential 
+  
+  - **Configuring IDA Web parameters**
 
-#Example of using private docker registry, external database and existing PVC:
-scripts/deployIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7 -r 1 -t external -d postgres -s ida-docker-secret --data-pvc-name ida-data-pvc --db-server-name <DB_HOST> --db-name idaweb --db-port <DB_PORT> --db-credential-secret ida-external-db-credential --network-type route
-```
+  Parameters | Description
+  --- | --------------
+  idaWeb.image | Image URL. E.g., example.repository.com/ida/ida:24.0.8
+  idaWeb.imagePullPolicy | Image pull policy. The default value is **Always**.
+  idaWeb.imagePullSecrets | Image pull secrets. E.g., ida-docker-secret 
+  idaWeb.replicas | Number of IDA pods. The default value is 1. 
+  idaWeb.resources.requests.cpu | Minimum number of CPUs required for IDA container. The default value is **2**.
+  idaWeb.resources.requests.memory | Minimum amount of memory required for IDA container. The default value is **4Gi**.
+  idaWeb.resources.limits.cpu | Maximum number of CPUs allowed for IDA container. The default value is **4**.
+  idaWeb.resources.limits.memory | Maximum amount of memory allowed for IDA container. The default value is **8Gi**.
+  idaWeb.storage.storageCapacity | The storage capacity for persisting data, if using dynamic provisioning. The default value is **5Gi**.
+  idaWeb.storage.existingDataPVCName | PVC for data if you are not using dynamic provisioning. E.g., ida-data-pvc
+  idaWeb.initContainer.resources.requests.cpu | Minimum number of CPUs required for IDA init containers. The default value is **100m**.
+  idaWeb.initContainer.resources.requests.memory | Minimum amount of memory required for IDA init containers. The default value is **256Mi**.
+  idaWeb.initContainer.resources.limits.cpu | Maximum number of CPUs allowed for IDA init containers. The default value is **200m**.
+  idaWeb.initContainer.resources.limits.memory | Maximum amount of memory allowed for IDA init containers. The default value is **512Mi**.
+  idaWeb.tlsCertSecret | Secret name that contains the files **tls.crt** and **tls.key** for IDA. E.g., ida-tls-secret 
+  idaWeb.trustedCertSecret | Secret name that contains trusted certificate files. E.g., ida-trusted-secret 
+  idaWeb.network.type | IDA service expose type. The possible values are "route" and "ingress".
 
-If success, you will see the log from your console
+- **Deploying IDA Custom Resource**
 
-```
-Success! You could visit IDA by the url "https://<IDA_HOST>/ida"
-```
+  Use the OpenShift CLI to apply the custom resource.
+
+
+  ```
+  oc apply -f descriptors/patterns/ida-cr-production.yaml
+  ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
 
@@ -345,6 +376,6 @@ chmod +x scripts/upgradeIDA.sh
 scripts/upgradeIDA.sh -i <ida_image>
 
 #Example of using private docker registry:
-scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.7
+scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.8
 ```
 

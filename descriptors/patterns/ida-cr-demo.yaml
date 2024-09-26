@@ -1,0 +1,85 @@
+apiVersion: sdc.ibm.com/v1
+kind: IDACluster
+metadata:
+  name: idadeploy
+spec:
+  shared:
+    # Storage class if using dynamic provisioning. E.g., managed-nfs-storage.
+    storageClassName: 
+  idaDatabase:
+    # Database type. The possible values are "mysql", "postgres", "db2" and "oracle".
+    # Internal database only supports "mysql" and "postgres".
+    type: postgres
+    internal:
+      # Enable internal database for demo purpose.
+      enabled: true
+      # Image URL for internal database.
+      image: postgres:14.3
+      # Image pull policy for internal database.
+      imagePullPolicy: Always
+      # Image pull secrets for internal database.
+      imagePullSecrets:
+      resources:
+        requests:
+          # Minimum number of CPUs for internal database.
+          cpu: 1
+          # Minimum amount of memory required for internal database.
+          memory: 1Gi
+        limits:
+          # Maximum number of CPUs allowed for internal database.
+          cpu: 2
+          # Maximum amount of memory allowed for internal database.
+          memory: 2Gi
+      storage:
+        # PVC for internal database if you are not using dynamic provisioning.
+        existingDBPVCName: 
+      # The configmap is used for init sql when start a db container.
+      configMapVolume: ida-db-configmap
+    external:
+      # Enable external database for production purpose.
+      enabled: false
+
+  idaWeb:
+    # Image URL
+    image: <IDA_IMAGE>
+    # Image pull policy
+    imagePullPolicy: Always
+    # Image Pull secrets
+    imagePullSecrets:
+    # Number of IDA pods.
+    replicas: 1
+    resources:
+      requests:
+        # Minimum number of CPUs for IDA container.
+        cpu: 1
+        # Minimum amount of memory required for IDA container.
+        memory: 2Gi
+      limits:
+        # Maximum number of CPUs allowed for IDA container.
+        cpu: 2
+        # Maximum amount of memory allowed for IDA container.
+        memory: 4Gi
+    storage:
+      # The storage capacity for persisting data, if using dynamic provisioning.
+      storageCapacity: 5Gi
+      #The existing PVC for the persisted IDA data. E.g., ida-data-pvc.
+      existingDataPVCName:
+    initContainer:
+      resources:
+        requests:
+          # Minimum number of CPUs for IDA init containers.
+          cpu: 100m
+          # Minimum amount of memory required for IDA init containers.
+          memory: 256Mi
+        limits:
+          # Maximum number of CPUs allowed for IDA init containers.
+          cpu: 200m
+          # Maximum amount of memory allowed for IDA init containers.
+          memory: 512Mi
+    # Secret name that contains the files tls.crt and tls.key for IDA. E.g., ida-tls-secret.
+    tlsCertSecret:
+    # Secret name that contains trusted certificate files. E.g., ida-trusted-secret.
+    trustedCertSecret:
+    network:
+      # IDA service expose type. The possible values are "route" and "ingress".
+      type:  
