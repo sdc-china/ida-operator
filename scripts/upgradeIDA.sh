@@ -34,6 +34,14 @@ else
     done
 fi
 
+# fix issue of field is immutable for field "type"
+TLS_SECRET=$(oc get secret | grep ida-web-tls | awk '{print$1}')
+if [ -z ${TLS_SECRET} ]; then
+    SECRET_TYPE=$(oc get secret $TLS_SECRET -o jsonpath='{.type}')
+    if [[ $SECRET_TYPE == "Opaque" ]]; then
+        ${KUBE_CMD} delete secret $TLS_SECRET
+    fi
+fi
 
 # Change the IDA image
 ${KUBE_CMD} patch --type=merge idacluster/idadeploy -p '{"spec": {"idaWeb": {"image": "'$IMAGEREGISTRY'"}}}'
