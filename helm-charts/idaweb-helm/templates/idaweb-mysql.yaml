@@ -3,9 +3,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    app: "{{.Release.Name}}-ida-db"
   name: "{{.Release.Name}}-ida-db"
+  annotations:
+    meta.helm.sh/release-name: {{.Release.Name}}
+    meta.helm.sh/release-namespace: {{.Release.Namespace}}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app: "{{.Release.Name}}-ida-db"
 spec:
   ports:
   - name: "export-port"
@@ -21,9 +25,13 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  labels:
-    app: "{{.Release.Name}}-ida-db"
   name: "{{.Release.Name}}-ida-db-pvc"
+  annotations:
+    meta.helm.sh/release-name: {{.Release.Name}}
+    meta.helm.sh/release-namespace: {{.Release.Namespace}}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app: "{{.Release.Name}}-ida-db"
 spec:
   accessModes:
     - ReadWriteMany
@@ -38,9 +46,13 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: "{{.Release.Name}}-ida-db"
   name: "{{.Release.Name}}-ida-db"
+  annotations:
+    meta.helm.sh/release-name: {{.Release.Name}}
+    meta.helm.sh/release-namespace: {{.Release.Namespace}}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app: "{{.Release.Name}}-ida-db"
 spec:
   replicas: 1
   selector:
