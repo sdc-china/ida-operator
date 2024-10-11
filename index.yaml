@@ -5,12 +5,22 @@ entries:
     appVersion: 1.37.0
     created: "2024-09-29T19:29:39.298311123-07:00"
     description: A Helm chart for creating a IDA Web Server in Kubernetes
+    digest: 83f46cc3f5b91c8a783f5c4e35f40e529c84bed57853cf95b5544752a143447c
+    name: idaweb-helm
+    type: application
+    urls:
+    - https://github.com/sdc-china/ida-operator/releases/download/24.0.8.1/idaweb-helm-24.0.8.1.tgz
+    version: 24.0.8-1
+  - apiVersion: v2
+    appVersion: 1.37.0
+    created: "2024-09-29T19:29:39.298311123-07:00"
+    description: A Helm chart for creating a IDA Web Server in Kubernetes
     digest: 4428eb9e6eb2de1bdaffe5cabe28fc2c49b88b4b36b36d508788b5cc8a02c013
     name: idaweb-helm
     type: application
     urls:
     - https://github.com/sdc-china/ida-operator/releases/download/24.0.8/idaweb-helm-24.0.8.tgz
-    version: 24.0.8  
+    version: 24.0.8
   - apiVersion: v2
     appVersion: 1.16.0
     created: "2024-09-06T04:01:18.106366179-07:00"
