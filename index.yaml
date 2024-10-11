@@ -3,7 +3,7 @@ entries:
   idaweb-helm:
   - apiVersion: v2
     appVersion: 1.37.0
-    created: "2024-09-29T19:29:39.298311123-07:00"
+    created: "2024-10-10T19:01:12.888658723-07:00"
     description: A Helm chart for creating a IDA Web Server in Kubernetes
     digest: 83f46cc3f5b91c8a783f5c4e35f40e529c84bed57853cf95b5544752a143447c
     name: idaweb-helm
