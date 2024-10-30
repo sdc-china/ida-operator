@@ -36,11 +36,11 @@ idaDatabase:
     databaseCredentialSecret: ida-db-credential
 
 operator:
-  image: ida-operator:24.0.8.1
+  image: ida-operator:24.0.8
 
 idaWeb:
   # Image URL
-  image: ida:24.0.8.1
+  image: ida:24.0.8
   # Image pull policy
   imagePullPolicy: Always
   # Image Pull secrets
