@@ -85,5 +85,5 @@ idaWeb:
 
 ## Install IDA
 ```
-helm install idaDeploy idaweb-helm --repo https://sdc-china.github.io/ida-operator -f values.yaml 
+helm install idadeploy idaweb-helm --repo https://sdc-china.github.io/ida-operator -f values.yaml 
 ```
