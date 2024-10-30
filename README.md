@@ -50,14 +50,14 @@ idaWeb:
   resources:
     requests:
       # Minimum number of CPUs for IDA container.
-      cpu:
+      cpu: 2000m
       # Minimum amount of memory required for IDA container.
-      memory:
+      memory: 4096Mi
     limits:
       # Maximum number of CPUs allowed for IDA container.
-      cpu:
+      cpu: 4000m
       # Maximum amount of memory allowed for IDA container.
-      memory:
+      memory: 8192Mi
   storage:
     #The existing PVC for the persisted IDA data. E.g., ida-data-pvc
     existingDataPVCName: ida-data
