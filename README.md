@@ -3,9 +3,9 @@
 ## Load IDA docker image
 ida-24.0.8.1.tgz is provided in the IDA release package.
 ```
-tar -zxvf ida-24.0.8.1.tgz
-docker load --input images/ida-operator-24.0.8.1.tar.gz
-docker load --input images/ida-24.0.8.1.tar.gz
+tar -zxvf ida-24.0.8.tgz
+docker load --input images/ida-operator-24.0.8.tar.gz
+docker load --input images/ida-24.0.8.tar.gz
 ```
 
 ## Prepare Helm Charts values.yaml
