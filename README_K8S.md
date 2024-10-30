@@ -77,7 +77,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
 
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-24.0.8.1.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.9.tgz -r $REGISTRY_HOST/ida
 ```
 
 ## IDA Operator
@@ -107,10 +107,10 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
 
 #Example of namespace-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8.1 -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.9 -s ida-operator-secret
 
 #Example of cluster-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8.1 -c Cluster -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.9 -c Cluster -s ida-operator-secret
 
 ```
 
@@ -163,7 +163,7 @@ chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
 #Example of using private docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8.1
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.9
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -323,7 +323,7 @@ A custom resource YAML is a configuration file that describes an instance of a d
 
   Parameters | Description
   --- | --------------
-  idaWeb.image | Image URL. E.g., example.repository.com/ida/ida:24.0.8.1
+  idaWeb.image | Image URL. E.g., example.repository.com/ida/ida:24.0.9
   idaWeb.imagePullPolicy | Image pull policy. The default value is **Always**.
   idaWeb.imagePullSecrets | Image pull secrets. E.g., ida-docker-secret 
   idaWeb.replicas | Number of IDA pods. The default value is 1. 
@@ -400,6 +400,6 @@ chmod +x scripts/upgradeIDA.sh
 scripts/upgradeIDA.sh -i <ida_image>
 
 #Example of using private docker registry:
-scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.8.1
+scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.9
 ```
 

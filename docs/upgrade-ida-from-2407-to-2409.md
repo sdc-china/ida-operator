@@ -1,4 +1,4 @@
-## Upgrade IDA from v24.0.7 to v24.0.8.1
+## Upgrade IDA from v24.0.7 to v24.0.9
 
 ### Before you begin
 
@@ -26,7 +26,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
   
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-24.0.8.1.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.9.tgz -r $REGISTRY_HOST/ida
 ```
 
 Step 4. Log in to your cluster
@@ -65,14 +65,14 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v24.0.8.1.
+Step 2. Updrade IDA operator to v24.0.9.
 
 ```
 chmod +x scripts/upgradeOperator.sh
 scripts/upgradeOperator.sh -i <operator_image>
 
 #Example of using private docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.8.1
+scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.9
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -100,7 +100,7 @@ chmod +x scripts/upgradeIDA.sh
 scripts/upgradeIDA.sh -i <ida_image>
 
 #Example of using private docker registry:
-scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.8.1
+scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.9
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
