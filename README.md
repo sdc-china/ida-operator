@@ -22,7 +22,7 @@ idaDatabase:
   external:
     # Enable external database for production purpose.
     enabled: true
-    # The JDBC URL. Only Oracle is supported. E.g., jdbc:oracle:thin:@serverName:port:databaseName
+    # The JDBC URL. For Oracle only. E.g., jdbc:oracle:thin:@serverName:port:databaseName
     #databaseUrl:
     # Database instance name, for database except Oracle. E.g., ida
     databaseName: ida
