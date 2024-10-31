@@ -1,11 +1,11 @@
 # IDA Helm Charts
 
 ## Load IDA docker image
-ida-24.0.8.tgz is provided in the IDA release package.
+ida-24.0.9.tgz is provided in the IDA release package.
 ```
-tar -zxvf ida-24.0.8.tgz
-docker load --input images/ida-operator-24.0.8.tar.gz
-docker load --input images/ida-24.0.8.tar.gz
+tar -zxvf ida-24.0.9.tgz
+docker load --input images/ida-operator-24.0.9.tar.gz
+docker load --input images/ida-24.0.9.tar.gz
 ```
 
 ## Prepare Helm Charts values.yaml
@@ -36,11 +36,11 @@ idaDatabase:
     databaseCredentialSecret: ida-db-credential
 
 operator:
-  image: ida-operator:24.0.8
+  image: ida-operator:24.0.9
 
 idaWeb:
   # Image URL
-  image: ida:24.0.8
+  image: ida:24.0.9
   # Image pull policy
   imagePullPolicy: Always
   # Image Pull secrets
