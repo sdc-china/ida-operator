@@ -14,6 +14,7 @@ function show_help {
     echo "  -c  The Operator scope, Cluster or Namespaced, the default is Namespaced"
     echo "  -s  Optional: Image pull secret, the default is empty"
     echo "      For example: ida-operator-secret"
+    echo "  -p  Optional: Image pull policy, IfNotPresent or Always, the default is IfNotPresent"
 }
 
 if [[ $1 == "" ]]
@@ -21,7 +22,7 @@ then
     show_help
     exit -1
 else
-    while getopts "h?i:c:s:w:" opt; do
+    while getopts "h?i:c:s:p:w:" opt; do
         case "$opt" in
         h|\?)
             show_help
@@ -32,6 +33,8 @@ else
         c)  SCOPE=$OPTARG
             ;;
         s)  SECRET=$OPTARG
+            ;;
+        p)  PULLPOLICY=$OPTARG
             ;;
         w)  WATCH_NAMESPACE=$OPTARG
             ;;
@@ -61,22 +64,26 @@ fi
 
 
 if [ ! -z ${IMAGEREGISTRY} ]; then
-# Change the location of the image
-echo "Using the operator image name: $IMAGEREGISTRY"
-sed -e "s|<IDA_OPERATOR_IMAGE>|\"$IMAGEREGISTRY\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+    # Change the location of the image
+    echo "Using the operator image name: $IMAGEREGISTRY"
+    sed -e "s|<IDA_OPERATOR_IMAGE>|\"$IMAGEREGISTRY\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
 fi
 
-if [ ! -z ${SECRET} ]; then
-# Change the docker secret
-echo "Using the docker secret: $SECRET"
-sed -e "s|name: <IMAGE_PULL_SECRET>|name: \"$SECRET\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
-fi
-cat ./deployoperator.yaml
 if [ -z ${SECRET} ]; then
-# Change the docker secret
-echo "Reset the docker secret"
-sed -e "s|imagePullSecrets:| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
-sed -e "s|- name: <IMAGE_PULL_SECRET>| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+    # Change the docker secret
+    echo "Reset the docker secret"
+    sed -e "s|imagePullSecrets:| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+    sed -e "s|- name: <IMAGE_PULL_SECRET>| |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+else
+    # Change the docker secret
+    echo "Using the docker secret: $SECRET"
+    sed -e "s|name: <IMAGE_PULL_SECRET>|name: \"$SECRET\" |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
+fi
+
+if [ ! -z ${PULLPOLICY} ]; then
+    # Change the image pull policy
+    echo "Using the image pull policy: $PULLPOLICY"
+    sed -e "s|imagePullPolicy: IfNotPresent|imagePullPolicy: $PULLPOLICY |g" ./deployoperator.yaml > ./deployoperatorsav.yaml ;  mv ./deployoperatorsav.yaml ./deployoperator.yaml
 fi
 
 if ([ ! -z ${SCOPE} ] && [[ ${SCOPE} == "Cluster" ]]) || [ ! -z ${WATCH_NAMESPACE} ]; then

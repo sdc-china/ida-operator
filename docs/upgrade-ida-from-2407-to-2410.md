@@ -1,4 +1,4 @@
-## Upgrade IDA from v24.0.7 to v24.0.9
+## Upgrade IDA from v24.0.7 to v24.0.10
 
 ### Before you begin
 
@@ -46,10 +46,11 @@ oc login --token=$TOKEN --server=<OCP_API_SERVER>
 
 Step 1. Back up the IDA database
 
-Step 2. Back up the IDA instance configuration
+Step 2. Back up the Operator deployment and IDA instance configuration
 
 ```
 mkdir -p idabackup
+oc get deployment/ida-operator -o yaml > idabackup/ida-operator.yaml
 oc get IDACluster/idadeploy -o yaml > idabackup/idadeploy.yaml
 ```
 
@@ -65,20 +66,17 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v24.0.9.
+Step 2. Updrade IDA operator to v24.0.10.
 
 ```
-chmod +x scripts/upgradeOperator.sh
-scripts/upgradeOperator.sh -i <operator_image>
-
-#Example of using private docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.9
+oc set env deployment/ida-operator IDA_OPERATOR_IMAGE-
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:24.0.10
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
-oc get pods -w
+oc get pods -w | grep ida-operator
 ```
 
 
@@ -93,27 +91,83 @@ oc project <ida_project_name>
 oc project ida
 ```
 
-Step 2. Upgrade IDA Instance.
+Step 2. Create a new copy of the backup custom resource.
+
+  ```
+  # Create a new copy of the backup custom resource
+  cp idabackup/idadeploy.yaml idabackup/idadeploy-2410.yaml
+  
+  ```
+  
+Step 3. Edit the new copy of the backup custom resource.
+
+- **Updating shared configuration parameters**
+  
+  Update and add below configurations under **spec.shared**.
+
+
+  ```
+    # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
+    imageRegistry: <PRIVATE_REGISTRY_URL>
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10
+    imageTag: 24.0.10
+    imagePullPolicy: IfNotPresent
+    # A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret"]
+    # You can copy the value from spec.idaWeb.imagePullSecrets
+    imagePullSecrets: ["ida-docker-secret"]
+  ```
+  
+- **Updating IDA Web parameters**
+  
+  Delete below configurations from **spec.idaWeb**.
+ 
+
+  ```
+    image: <IDA_IMAGE>
+    imagePullPolicy: Always
+    imagePullSecrets: <PULL_SECRET>
+  
+  ```
+
+  Update and add below configurations under **spec.idaWeb**.
+  
+
+  ```
+    # IDA Image name. E.g., ida/ida
+    imageName: ida/ida
+    initContainer:
+      resources:
+        requests:
+          # Minimum number of CPUs for IDA init containers.
+          cpu: 100m
+          # Minimum amount of memory required for IDA init containers.
+          memory: 256Mi
+        limits:
+          # Maximum number of CPUs allowed for IDA init containers.
+          cpu: 200m
+          # Maximum amount of memory allowed for IDA init containers.
+          memory: 512Mi
+ 
+
+  ```
+ 
+Step 4. Apply IDA upgrade. 
+
+  ```
+   oc apply -f idabackup/idadeploy-2410.yaml
+  ```
+
+Step 5. Monitor the pod until it shows a STATUS of "Running":
 
 ```
-chmod +x scripts/upgradeIDA.sh
-scripts/upgradeIDA.sh -i <ida_image>
-
-#Example of using private docker registry:
-scripts/upgradeIDA.sh -i $REGISTRY_HOST/ida/ida:24.0.9
+oc get pods -w | grep ida-web
 ```
 
-Step 3. Monitor the pod until it shows a STATUS of "Running":
-
-```
-oc get pods -w
-```
-
-Step 4. Run Database migration page in IDA.
+Step 6. Run Database migration page in IDA.
 
 Please refer to IDA doc: https://sdc-china.github.io/IDA-doc/installation/installation-migrating-ida-application.html
 
-Step 5. Restart IDA Pod.
+Step 7. Restart IDA Pod.
 
 ```
 oc rollout restart deployments/idadeploy-ida-web
@@ -141,11 +195,11 @@ oc project ida
 Step 2. Roll back IDA operator.
 
 ```
-chmod +x scripts/upgradeOperator.sh
-scripts/upgradeOperator.sh -i <operator_image>
+#Delete the ida operator deployment of the upgraded release.
+oc delete deployment/ida-operator
 
-#Example of using private docker registry:
-scripts/upgradeOperator.sh -i $REGISTRY_HOST/ida/ida-operator:24.0.7
+#Apply the backup operator deployment
+oc apply -f idabackup/ida-operator.yaml
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -179,6 +233,6 @@ oc apply -f idabackup/idadeploy.yaml
 Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
-oc get pods -w
+oc get pods -w | grep ida-web
 ```
 

@@ -6,7 +6,6 @@ metadata:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 24.0.9
 spec:
   replicas: 1
   selector:
@@ -20,12 +19,9 @@ spec:
       containers:
         - name: operator
           image: <IDA_OPERATOR_IMAGE>
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           args:
             - --metrics-bind-address=127.0.0.1:8080
-          env:
-            - name: IDA_OPERATOR_IMAGE
-              value: <IDA_OPERATOR_IMAGE>
           resources:
             limits:
               cpu: 500m

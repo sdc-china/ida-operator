@@ -4,6 +4,14 @@ metadata:
   name: idadeploy
 spec:
   shared:
+    # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
+    imageRegistry:
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10
+    imageTag:
+    # Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
+    imagePullPolicy: IfNotPresent
+    # A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret", "ida-operator-secret"]
+    imagePullSecrets:
     # Storage class if using dynamic provisioning. E.g., managed-nfs-storage.
     storageClassName: 
   idaDatabase:
@@ -13,12 +21,10 @@ spec:
     internal:
       # Enable internal database for demo purpose.
       enabled: true
-      # Image URL for internal database.
-      image: postgres:14.3
-      # Image pull policy for internal database.
-      imagePullPolicy: Always
-      # Image pull secrets for internal database.
-      imagePullSecrets:
+      # Image name for internal database.
+      imageName: postgres
+      # Image tag for internal database.
+      imageTag: 14.3
       resources:
         requests:
           # Minimum number of CPUs for internal database.
@@ -40,13 +46,7 @@ spec:
       enabled: false
 
   idaWeb:
-    # Image URL
-    image: <IDA_IMAGE>
-    # Image pull policy
-    imagePullPolicy: Always
-    # Image Pull secrets
-    imagePullSecrets:
-    # Number of IDA pods.
+    imageName: ida/ida
     replicas: 1
     resources:
       requests:
