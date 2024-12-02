@@ -6,7 +6,7 @@ spec:
   shared:
     # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
     imageRegistry:
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10.1
     imageTag:
     # Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
     imagePullPolicy: IfNotPresent
