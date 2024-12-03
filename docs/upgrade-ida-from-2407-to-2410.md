@@ -26,7 +26,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
   
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-24.0.9.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.10-2.tgz -r $REGISTRY_HOST/ida
 ```
 
 Step 4. Log in to your cluster
@@ -66,11 +66,11 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v24.0.10.
+Step 2. Updrade IDA operator to v24.0.10-2
 
 ```
 oc set env deployment/ida-operator IDA_OPERATOR_IMAGE-
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:24.0.10
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:24.0.10-2
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -109,8 +109,8 @@ Step 3. Edit the new copy of the backup custom resource.
   ```
     # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
     imageRegistry: <PRIVATE_REGISTRY_URL>
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10
-    imageTag: 24.0.10
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10-2
+    imageTag: 24.0.10-2
     imagePullPolicy: IfNotPresent
     # A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret"]
     # You can copy the value from spec.idaWeb.imagePullSecrets
