@@ -1,4 +1,4 @@
-## Upgrade IDA from v24.0.7 to v24.0.10
+## Upgrade IDA from v24.0.7 to v24.0.11
 
 ### Before you begin
 
@@ -26,20 +26,28 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
   
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-24.0.9.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-24.0.11.tgz -r $REGISTRY_HOST/ida
 ```
 
-Step 4. Log in to your cluster
+Step 4. Log in to your cluster by either of the two ways.
+
+- Login with OpenShift User
 
 ```
-oc project <ida_project_name>
+oc login <OCP_API_SERVER> -u <ocp_user> -p <password>
+```
 
+- Login with IDA installer token
+
+```
 #Get ida installer token
+oc project <ida_project_name>
 TOKENNAME=`oc describe  sa/ida-installer-sa  | grep Tokens |  awk '{print $2}'`
 TOKEN=`oc get secret $TOKENNAME -o jsonpath='{.data.token}'| base64 --decode`
 
 #Login by IDA installer token
 oc login --token=$TOKEN --server=<OCP_API_SERVER>
+
 ```
 
 ### Backup IDA
@@ -49,6 +57,8 @@ Step 1. Back up the IDA database
 Step 2. Back up the Operator deployment and IDA instance configuration
 
 ```
+oc project <ida_project_name>
+
 mkdir -p idabackup
 oc get deployment/ida-operator -o yaml > idabackup/ida-operator.yaml
 oc get IDACluster/idadeploy -o yaml > idabackup/idadeploy.yaml
@@ -66,11 +76,11 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v24.0.10.
+Step 2. Updrade IDA operator to v24.0.11.
 
 ```
 oc set env deployment/ida-operator IDA_OPERATOR_IMAGE-
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:24.0.10
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:24.0.11
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -95,7 +105,7 @@ Step 2. Create a new copy of the backup custom resource.
 
   ```
   # Create a new copy of the backup custom resource
-  cp idabackup/idadeploy.yaml idabackup/idadeploy-2410.yaml
+  cp idabackup/idadeploy.yaml idabackup/idadeploy-2411.yaml
   
   ```
   
@@ -109,8 +119,8 @@ Step 3. Edit the new copy of the backup custom resource.
   ```
     # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
     imageRegistry: <PRIVATE_REGISTRY_URL>
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.10
-    imageTag: 24.0.10
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 24.0.11
+    imageTag: 24.0.11
     imagePullPolicy: IfNotPresent
     # A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret"]
     # You can copy the value from spec.idaWeb.imagePullSecrets
@@ -154,7 +164,7 @@ Step 3. Edit the new copy of the backup custom resource.
 Step 4. Apply IDA upgrade. 
 
   ```
-   oc apply -f idabackup/idadeploy-2410.yaml
+   oc apply -f idabackup/idadeploy-2411.yaml --force
   ```
 
 Step 5. Monitor the pod until it shows a STATUS of "Running":
@@ -167,10 +177,12 @@ Step 6. Run Database migration page in IDA.
 
 Please refer to IDA doc: https://sdc-china.github.io/IDA-doc/installation/installation-migrating-ida-application.html
 
-Step 7. Restart IDA Pod.
+Step 7. Restart IDA Pod and monitor the pod until it shows a STATUS of "Running".
 
 ```
 oc rollout restart deployments/idadeploy-ida-web
+
+oc get pods -w | grep ida-web
 
 ```
 
