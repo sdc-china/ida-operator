@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: ida
     app.kubernetes.io/managed-by: ida
     app.kubernetes.io/name: ida
-    release: 25.0.1
+    release: 25.0.2
 spec:
   replicas: 1
   selector:
