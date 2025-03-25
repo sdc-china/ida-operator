@@ -74,10 +74,10 @@ Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private
 
 ```
 chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
+scripts/loadImages.sh -p ida-<version>-java17.tgz -r <docker_registry>
 
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-25.0.2.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-25.0.3-java17.tgz -r $REGISTRY_HOST/ida
 ```
 
 ## IDA Operator
@@ -107,10 +107,10 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
 
 #Example of namespace-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.2 -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.3 -s ida-operator-secret
 
 #Example of cluster-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.2 -c Cluster -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.3 -c Cluster -s ida-operator-secret
 
 ```
 
@@ -160,7 +160,7 @@ Step 3. Upgrade IDA operator.
 
 ```
 #Example of using private docker registry:
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:25.0.2
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:25.0.3
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -301,7 +301,7 @@ A custom resource YAML is a configuration file that describes an instance of a d
   Parameters | Description
   --- | --------------
   shared.imageRegistry | Image registry URL for all components, can be overridden individually. E.g., example.repository.com
-  shared.imageTag | Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.2
+  shared.imageTag | Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.3
   shared.imagePullPolicy | Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
   shared.imagePullSecrets | A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret", "ida-operator-secret"].
   shared.storageClassName | Storage class if using dynamic provisioning. E.g., managed-nfs-storage
@@ -396,7 +396,7 @@ Follow the Step 2 of **Preparing to install IDA Instance** to prepare the new ID
 Step 3. Upgrade IDA Instance.
 
 ```
-kubectl patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.2"}}}'
+kubectl patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.3"}}}'
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":

@@ -6,7 +6,7 @@ spec:
   shared:
     # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
     imageRegistry:
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.2
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.3
     imageTag:
     # Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
     imagePullPolicy: IfNotPresent
@@ -46,7 +46,12 @@ spec:
       enabled: false
 
   idaWeb:
+    # IDA Image name. E.g., ida/ida
     imageName: ida/ida
+    # JDK Version, the possible values are 8 and 17. 
+    # If this value is set, then it will load ida-web image tag end with jdk version. EG: ida:xx.x.x-java8 or ida:xx.x.x-java17.
+    jdkVersion: 17
+    # Number of IDA Pods
     replicas: 1
     resources:
       requests:
