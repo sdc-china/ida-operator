@@ -16,48 +16,58 @@ spec:
     storageClassName: 
   idaDatabase:
     # Database type. The possible values are "mysql", "postgres", "db2" and "oracle".
+    # Internal database only supports "mysql" and "postgres".
     type: postgres
     internal:
       # Enable internal database for demo purpose.
-      enabled: false
+      enabled: true
+      # Image name for internal database.
+      imageName: postgres
+      # Image tag for internal database.
+      imageTag: 14.3
+      resources:
+        requests:
+          # Minimum number of CPUs for internal database.
+          cpu: 1
+          # Minimum amount of memory required for internal database.
+          memory: 1Gi
+        limits:
+          # Maximum number of CPUs allowed for internal database.
+          cpu: 2
+          # Maximum amount of memory allowed for internal database.
+          memory: 2Gi
+      storage:
+        # PVC for internal database if you are not using dynamic provisioning.
+        existingDBPVCName: 
+      # The configmap is used for init sql when start a db container.
+      configMapVolume: ida-db-configmap
     external:
       # Enable external database for production purpose.
-      enabled: true
-      # The JDBC URL. Only Oracle is supported. E.g., jdbc:oracle:thin:@serverName:port:databaseName
-      databaseUrl:
-      # Database instance name, for database except Oracle. E.g., ida
-      databaseName:
-      # Database port, for database except Oracle. E.g., 5432
-      databasePort:
-      # Database server name in the form of either a fully qualified domain name (FQDN) or an IP address, for database except Oracle. E.g., example.postgre.com
-      databaseServerName:
-      # Database schema name. This parameter is optional. E.g., databaseschema
-      currentSchema:
-      # Secret name that contains the DATABASE_USER and DATABASE_PASSWORD keys.
-      databaseCredentialSecret: ida-db-credential
+      enabled: false
+
   idaWeb:
     # IDA Image name. E.g., ida/ida
     imageName: ida/ida
     # JDK Version, the possible values are 8 and 17. 
     # If this value is set, then it will load ida-web image tag end with jdk version. EG: ida:xx.x.x-java8 or ida:xx.x.x-java17.
-    jdkVersion: 17
+    jdkVersion: 8
     # Number of IDA Pods
     replicas: 1
     resources:
       requests:
         # Minimum number of CPUs for IDA container.
-        cpu: 2
+        cpu: 1
         # Minimum amount of memory required for IDA container.
-        memory: 4Gi
+        memory: 2Gi
       limits:
         # Maximum number of CPUs allowed for IDA container.
-        cpu: 4
+        cpu: 2
         # Maximum amount of memory allowed for IDA container.
-        memory: 8Gi
+        memory: 4Gi
     storage:
       # The storage capacity for persisting data, if using dynamic provisioning.
-      storageCapacity: 20Gi
-      #The existing PVC for the persisted IDA data. E.g., ida-data-pvc
+      storageCapacity: 5Gi
+      #The existing PVC for the persisted IDA data. E.g., ida-data-pvc.
       existingDataPVCName:
     initContainer:
       resources:
