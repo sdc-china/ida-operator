@@ -77,7 +77,7 @@ oc project ida
 Step 2. Updrade IDA operator to v25.0.3.
 
 ```
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.3
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:25.0.3
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -117,7 +117,18 @@ Step 3. Edit the new copy of the backup custom resource.
     # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.3
     imageTag: 25.0.3
   ```
-   
+  
+- **Updating IDA Web parameters**
+
+  Add below configurations under **spec.idaWeb**.
+  
+
+  ```
+    # JDK Version, the possible values are 8 and 17. 
+    jdkVersion: 8
+
+  ```
+ 
 Step 4. Apply IDA upgrade. 
 
   ```
