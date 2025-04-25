@@ -1,4 +1,4 @@
-## Upgrade IDA from v24.0.7 to v25.0.1
+## Upgrade IDA from v25.0.1 to v25.0.4
 
 ### Before you begin
 
@@ -23,10 +23,10 @@ Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private
 
 ```
 chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-<version>.tgz -r <docker_registry>
+scripts/loadImages.sh -p ida-<version>-java17.tgz -r <docker_registry>
   
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-25.0.1.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-25.0.4-java17.tgz -r $REGISTRY_HOST
 ```
 
 Step 4. Log in to your cluster by either of the two ways.
@@ -52,9 +52,7 @@ oc login --token=$TOKEN --server=<OCP_API_SERVER>
 
 ### Backup IDA
 
-Step 1. Back up the IDA database
-
-Step 2. Back up the Operator deployment and IDA instance configuration
+Back up the Operator deployment and IDA instance configuration
 
 ```
 oc project <ida_project_name>
@@ -76,11 +74,10 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v25.0.1.
+Step 2. Updrade IDA operator to v25.0.4.
 
 ```
-oc set env deployment/ida-operator IDA_OPERATOR_IMAGE-
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:25.0.1
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.4
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -105,7 +102,7 @@ Step 2. Create a new copy of the backup custom resource.
 
   ```
   # Create a new copy of the backup custom resource
-  cp idabackup/idadeploy.yaml idabackup/idadeploy-2501.yaml
+  cp idabackup/idadeploy.yaml idabackup/idadeploy-2504.yaml
   
   ```
   
@@ -113,58 +110,29 @@ Step 3. Edit the new copy of the backup custom resource.
 
 - **Updating shared configuration parameters**
   
-  Update and add below configurations under **spec.shared**.
+  Update below configurations under **spec.shared**.
 
 
   ```
-    # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
-    imageRegistry: <PRIVATE_REGISTRY_URL>
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.1
-    imageTag: 25.0.1
-    imagePullPolicy: IfNotPresent
-    # A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret"]
-    # You can copy the value from spec.idaWeb.imagePullSecrets
-    imagePullSecrets: ["ida-docker-secret"]
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.4
+    imageTag: 25.0.4
   ```
   
 - **Updating IDA Web parameters**
-  
-  Delete below configurations from **spec.idaWeb**.
- 
 
-  ```
-    image: <IDA_IMAGE>
-    imagePullPolicy: Always
-    imagePullSecrets: <PULL_SECRET>
-  
-  ```
-
-  Update and add below configurations under **spec.idaWeb**.
+  Add below configurations under **spec.idaWeb**.
   
 
   ```
-    # IDA Image name. E.g., ida/ida
-    imageName: ida/ida
-    initContainer:
-      resources:
-        requests:
-          # Minimum number of CPUs for IDA init containers.
-          cpu: 100m
-          # Minimum amount of memory required for IDA init containers.
-          memory: 256Mi
-        limits:
-          # Maximum number of CPUs allowed for IDA init containers.
-          cpu: 200m
-          # Maximum amount of memory allowed for IDA init containers.
-          memory: 512Mi
- 
+    # JDK Version, the possible values are 8 and 17. 
+    jdkVersion: 17
 
   ```
  
 Step 4. Apply IDA upgrade. 
 
   ```
-   oc apply -f idabackup/idadeploy-2501.yaml --force
+   oc apply -f idabackup/idadeploy-2504.yaml --force
   ```
 
 Step 5. Monitor the pod until it shows a STATUS of "Running":
@@ -173,25 +141,8 @@ Step 5. Monitor the pod until it shows a STATUS of "Running":
 oc get pods -w | grep ida-web
 ```
 
-Step 6. Run Database migration page in IDA.
 
-Please refer to IDA doc: https://sdc-china.github.io/IDA-doc/installation/installation-migrating-ida-application.html
-
-Step 7. Restart IDA Pod and monitor the pod until it shows a STATUS of "Running".
-
-```
-oc rollout restart deployments/idadeploy-ida-web
-
-oc get pods -w | grep ida-web
-
-```
-
-## Rolling back IDA to v24.0.7
-
-### Rolling back IDA database
-
-If your database schema changed during the upgrade, restore your databases from the backups that you made before you upgraded in section [Backup IDA](#backup-ida). Otherwise, you do not need to roll back your database.
-
+## Rolling back IDA to v25.0.1
 
 ### Rolling back IDA Operator
 
