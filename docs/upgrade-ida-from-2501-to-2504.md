@@ -19,13 +19,16 @@ podman login --tls-verify=false $REGISTRY_HOST
 
 Step 3. Load IDA docker images
 
-Get the IDA image file **ida-&lt;version&gt;.tgz**, then push it to your private registry.
+Get the IDA image file, then push it to your private registry.
 
 ```
 chmod +x scripts/loadImages.sh
-scripts/loadImages.sh -p ida-<version>-java17.tgz -r <docker_registry>
-  
-#Example of using private docker registry:
+scripts/loadImages.sh -p <ida_image_archive> -r <docker_registry>
+
+#Example of loading tar file and using private docker registry:
+scripts/loadImages.sh -p ida-25.0.4-java17.tar -r $REGISTRY_HOST
+
+#Example of loading tgz file and using private docker registry:
 scripts/loadImages.sh -p ida-25.0.4-java17.tgz -r $REGISTRY_HOST
 ```
 
@@ -116,17 +119,6 @@ Step 3. Edit the new copy of the backup custom resource.
   ```
     # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.4
     imageTag: 25.0.4
-  ```
-  
-- **Updating IDA Web parameters**
-
-  Add below configurations under **spec.idaWeb**.
-  
-
-  ```
-    # JDK Version, the possible values are 8 and 17. 
-    jdkVersion: 17
-
   ```
  
 Step 4. Apply IDA upgrade. 

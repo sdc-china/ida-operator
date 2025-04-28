@@ -20,7 +20,7 @@ function showHelp {
     echo "Options:"
     echo "  -h  Display help"
     echo "  -p  PPA archive files location or archive filename"
-    echo "      For example: /Downloads/PPA or /Downloads/PPA/ImageArchive.tgz or /Downloads/PPA/ImageArchive.tar.gz"
+    echo "      For example: /Downloads/PPA or /Downloads/PPA/ImageArchive.tar or /Downloads/PPA/ImageArchive.tgz"
     echo "  -r  Target Docker registry and namespace"
     echo "      For example: mycorp-docker-local.mycorp.com/image-space"
     echo "  -l  Optional: Target a local registry"
@@ -31,8 +31,7 @@ unset ppa_path
 unset target_docker_repo
 local_registry=false
 unset cli_cmd
-unset local_repo_prefix
-unset loaded_msg_prefix
+unset loaded_msg_prefix_list
 
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
@@ -62,19 +61,17 @@ else
 
 fi
 
+loaded_msg_prefix_list=("Loaded image: localhost/" "Loaded image: docker.io/library/" "Loaded image: ")
+
 # Check OCI command
 if command -v "podman" >/dev/null 2>&1
 then
     echo "Use podman command to load images."
     cli_cmd="podman"
-    local_repo_prefix="localhost/"
-    loaded_msg_prefix="Loaded image: localhost/"
 elif command -v "docker" >/dev/null 2>&1
 then
     echo "Use docker command to load images."
     cli_cmd="docker"
-    local_repo_prefix=""
-    loaded_msg_prefix="Loaded image: "
 else
     echo "No available Docker-compatible command line. Exit."
     exit -1
@@ -93,7 +90,7 @@ then
     exit -1
 elif `test -f $ppa_path` || `test -d $ppa_path`
 then
-    arr_ppa_archive=( $(find ${ppa_path} -name "*.tgz" -o -name "*.tar.gz") )
+    arr_ppa_archive=( $(find ${ppa_path} -name "*.tgz" -o -name "*.tar") )
     echo "arr_ppa_archive: $arr_ppa_archive"
 else
     echo "Input PPA archive files location or name invalid! ($ppa_path) Exit and try again."
@@ -102,7 +99,7 @@ else
 fi
 
 echo "target_docker_repo: $target_docker_repo"
-if [ -z "$target_docker_repo" ]
+if [ -z "$target_docker_repo" ] && [ "$local_registry" = "false" ];
 then
     echo "Need to input target Docker registry and namespace value."
     showHelp
@@ -116,7 +113,7 @@ for ppa_file in ${arr_ppa_archive[@]}
 do
     echo -e "\nCheck image archives in the PPA package: "$ppa_file
     # check manifest.json
-    tar -zxvf $ppa_file manifest.json
+    tar -xvf $ppa_file manifest.json
     # get image archive files list in current PPA
     arr_img_gz=( $(grep archive manifest.json | awk '{print $2}' | sed 's/\"//g') )
     echo "Image archives list in ${ppa_file}:"
@@ -131,28 +128,36 @@ do
             if [[ $img_gz_file == images/* ]]
             then
                 echo "Loading image file: "$img_gz_file
-                # echo "tar -zxf ${ppa_file} ${img_gz_file} -O | docker load -q"
-                load_cmd_output=`tar -zOxf ${ppa_file} ${img_gz_file} | ${cli_cmd} load -q`
+                # echo "tar -xf ${ppa_file} ${img_gz_file} -O | docker load -q"
+                load_cmd_output=`tar -Oxf ${ppa_file} ${img_gz_file} | ${cli_cmd} load -q`
                 echo $load_cmd_output
+                
+                matched_content=""
+                for loaded_msg_prefix in "${loaded_msg_prefix_list[@]}"; do
+                    if [[ "$load_cmd_output" == *"$loaded_msg_prefix"* ]]; then
+                        matched_content="${load_cmd_output#*$loaded_msg_prefix}"
+                        break
+                    fi
+                done
 
-                arr_img_load[$_ind]=${load_cmd_output#*${loaded_msg_prefix}}
-                if [ "${cli_cmd}" = "docker" ]
-                then
-                    echo "${cli_cmd} tag ${local_repo_prefix}${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}"
-                    ${cli_cmd} tag ${local_repo_prefix}${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}
-                fi
+                arr_img_load[$_ind]="$matched_content"
+                
+                echo "${cli_cmd} tag ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}"
+                ${cli_cmd} tag ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}
+
 
                 if ! $local_registry
                 then
+                    
                     if [ "${cli_cmd}" = "docker" ]
                     then
-                        ${cli_cmd} push ${target_docker_repo}/${arr_img_load[$_ind]} | grep -e repository -e digest -e unauthorized
-                        ${cli_cmd} rmi -f ${local_repo_prefix}${arr_img_load[$_ind]} ${local_repo_prefix}${target_docker_repo}/${arr_img_load[$_ind]} | grep -e unauthorized
+                        ${cli_cmd} push ${arr_img_load[$_ind]} | grep -e repository -e digest -e unauthorized
+                        ${cli_cmd} rmi -f ${arr_img_load[$_ind]} {target_docker_repo}/${arr_img_load[$_ind]} | grep -e unauthorized
                         echo "Pushed image: "${target_docker_repo}/${arr_img_load[$_ind]}
                     elif [ "${cli_cmd}" = "podman" ]
                     then
-                        ${cli_cmd} push --tls-verify=false ${local_repo_prefix}${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]} | grep -e repository -e digest -e unauthorized
-                        ${cli_cmd} rmi -f ${local_repo_prefix}${arr_img_load[$_ind]} | grep -e unauthorized
+                        ${cli_cmd} push --tls-verify=false ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]} | grep -e repository -e digest -e unauthorized
+                        ${cli_cmd} rmi -f ${arr_img_load[$_ind]} | grep -e unauthorized
                         echo "Pushed image: "${target_docker_repo}/${arr_img_load[$_ind]}
                     fi
                 fi
@@ -170,11 +175,11 @@ done
 # summary list
 if $local_registry
 then
-    status="load"
+    echo -e "\nDocker images load completed, and check the following images in the Local Docker:"
 else
-    status="push"
+    echo -e "\nDocker images push to ${target_docker_repo} completed, and check the following images in the Docker registry:"
 fi
-echo -e "\nDocker images ${status} to ${target_docker_repo} completed, and check the following images in the Docker registry:"
+
 for img_load in ${arr_img_load[@]}
 do
     echo "     -  ${target_docker_repo}/${img_load}"
@@ -182,3 +187,4 @@ done
 
 #
 rm -rf manifest.json
+
