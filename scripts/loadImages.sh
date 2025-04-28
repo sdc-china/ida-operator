@@ -131,7 +131,7 @@ do
                 # echo "tar -xf ${ppa_file} ${img_gz_file} -O | docker load -q"
                 load_cmd_output=`tar -Oxf ${ppa_file} ${img_gz_file} | ${cli_cmd} load -q`
                 echo $load_cmd_output
-                
+
                 matched_content=""
                 for loaded_msg_prefix in "${loaded_msg_prefix_list[@]}"; do
                     if [[ "$load_cmd_output" == *"$loaded_msg_prefix"* ]]; then
@@ -141,14 +141,13 @@ do
                 done
 
                 arr_img_load[$_ind]="$matched_content"
-                
-                echo "${cli_cmd} tag ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}"
-                ${cli_cmd} tag ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}
 
 
                 if ! $local_registry
                 then
-                    
+                    echo "${cli_cmd} tag ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}"
+                    ${cli_cmd} tag ${arr_img_load[$_ind]} ${target_docker_repo}/${arr_img_load[$_ind]}
+
                     if [ "${cli_cmd}" = "docker" ]
                     then
                         ${cli_cmd} push ${arr_img_load[$_ind]} | grep -e repository -e digest -e unauthorized
@@ -169,7 +168,7 @@ do
         echo "No image archive found in "$ppa_file
         continue
     fi
-    
+
 done
 
 # summary list
@@ -182,9 +181,14 @@ fi
 
 for img_load in ${arr_img_load[@]}
 do
-    echo "     -  ${target_docker_repo}/${img_load}"
+    if [ -z "${target_docker_repo}" ]
+    then
+        echo "     -  ${img_load}"
+    else
+        echo "     -  ${target_docker_repo}/${img_load}"
+    fi
 done
+
 
 #
 rm -rf manifest.json
-
