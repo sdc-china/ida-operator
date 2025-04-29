@@ -14,7 +14,7 @@ Step 2. Log in to your docker registry
 ```
 #Example of using external docker registry:
 REGISTRY_HOST=<YOUR_PRIVATE_EXTERNAL_REGISTRY>
-docker login --tls-verify=false $REGISTRY_HOST
+podman login --tls-verify=false $REGISTRY_HOST
 ```
 
 Step 3. Load IDA docker images
