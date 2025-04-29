@@ -61,7 +61,7 @@ else
 
 fi
 
-loaded_msg_prefix_list=("Loaded image: localhost/" "Loaded image: docker.io/library/" "Loaded image: ")
+loaded_msg_prefix_list=("Loaded image(s): localhost/" "Loaded image: localhost/" "Loaded image: docker.io/library/" "Loaded image: ")
 
 # Check OCI command
 if command -v "podman" >/dev/null 2>&1
