@@ -1,4 +1,4 @@
-## Upgrade IDA from v25.0.1 to v25.0.4
+## Upgrade IDA to v25.0.5
 
 ### Before you begin
 
@@ -26,10 +26,10 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p <ida_image_archive> -r <docker_registry>
 
 #Example of loading tar file and using private docker registry:
-scripts/loadImages.sh -p ida-25.0.4-java17.tar -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-25.0.5-java17.tar -r $REGISTRY_HOST
 
 #Example of loading tgz file and using private docker registry:
-scripts/loadImages.sh -p ida-25.0.4-java17.tgz -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-25.0.5-java17.tgz -r $REGISTRY_HOST
 ```
 
 Step 4. Log in to your cluster by either of the two ways.
@@ -77,10 +77,10 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v25.0.4.
+Step 2. Updrade IDA operator to v25.0.5.
 
 ```
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.4
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.5
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
@@ -100,41 +100,25 @@ oc project <ida_project_name>
 #For example:
 oc project ida
 ```
-
-Step 2. Create a new copy of the backup custom resource.
-
-  ```
-  # Create a new copy of the backup custom resource
-  cp idabackup/idadeploy.yaml idabackup/idadeploy-2504.yaml
   
-  ```
-  
-Step 3. Edit the new copy of the backup custom resource.
+Step 2. Updrade IDA to v25.0.5.
 
-- **Updating shared configuration parameters**
-  
-  Update below configurations under **spec.shared**.
+```
+oc get deployment | grep ida-web | awk '{print $1}' | xargs oc rollout pause deployment
 
+oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.5"}}}'
 
-  ```
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.4
-    imageTag: 25.0.4
-  ```
- 
-Step 4. Apply IDA upgrade. 
+oc get deployment | grep ida-web | awk '{print $1}' | xargs oc delete deployment
+```
 
-  ```
-   oc apply -f idabackup/idadeploy-2504.yaml --force
-  ```
-
-Step 5. Monitor the pod until it shows a STATUS of "Running":
+Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
 oc get pods -w | grep ida-web
 ```
 
 
-## Rolling back IDA to v25.0.1
+## Rolling back IDA
 
 ### Rolling back IDA Operator
 
