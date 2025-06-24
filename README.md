@@ -57,7 +57,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>-java17.tgz -r <docker_registry>
   
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-25.0.5-java17.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-25.0.6-java17.tgz -r $REGISTRY_HOST/ida
 ```
 
 ## IDA Operator
@@ -84,13 +84,10 @@ Step 3. Deploy IDA operator to your cluster.
 
 ```
 chmod +x scripts/deployOperator.sh
-scripts/deployOperator.sh -i <operator_image> -c <operator_scope> -s <image_pull_secret>
+scripts/deployOperator.sh -i <operator_image> -s <image_pull_secret>
 
-#Example of namespace-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.5 -s ida-operator-secret
-
-#Example of cluster-scoped operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.5 -c Cluster -s ida-operator-secret
+#Example of operator:
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.6 -s ida-operator-secret
 
 ```
 
@@ -112,13 +109,10 @@ oc logs -f deployment/ida-operator
 oc project <project_name>
 
 chmod +x scripts/deleteOperator.sh
-scripts/deleteOperator.sh -c <operator_scope>
 
 #Example of namespace-scoped operator uninstallation:
 scripts/deleteOperator.sh 
 
-#Example of cluster-scoped operator uninstallation:
-scripts/deleteOperator.sh -c Cluster
 ```
 
 ### Upgrade IDA Operator.
@@ -257,7 +251,7 @@ A custom resource YAML is a configuration file that describes an instance of a d
   Parameters | Description
   --- | --------------
   shared.imageRegistry | Image registry URL for all components, can be overridden individually. E.g., example.repository.com
-  shared.imageTag | Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.5
+  shared.imageTag | Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.6
   shared.imagePullPolicy | Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
   shared.imagePullSecrets | A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret", "ida-operator-secret"].
   shared.storageClassName | Storage class if using dynamic provisioning. E.g., managed-nfs-storage

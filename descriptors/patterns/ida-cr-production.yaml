@@ -1,12 +1,14 @@
 apiVersion: sdc.ibm.com/v1
 kind: IDACluster
 metadata:
+  annotations:
+    helm.sdk.operatorframework.io/reconcile-period: 30s
   name: idadeploy
 spec:
   shared:
     # Image registry URL for all components, can be overridden individually. E.g., example.repository.com
     imageRegistry:
-    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.5
+    # Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.6
     imageTag:
     # Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
     imagePullPolicy: IfNotPresent

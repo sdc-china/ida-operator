@@ -35,11 +35,14 @@ rules:
   - apiGroups:
       - apps
       - extensions
+      - batch
     resources:
       - deployments
       - daemonsets
       - replicasets
       - statefulsets
+      - jobs
+      - cronjob
     verbs:
       - '*'
   - apiGroups:
@@ -58,6 +61,7 @@ rules:
       - route.openshift.io
     resources:
       - routes
+      - routes/custom-host
     verbs:
       - '*'
   - apiGroups:

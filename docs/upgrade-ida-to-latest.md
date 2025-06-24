@@ -1,4 +1,4 @@
-## Upgrade IDA to v25.0.5
+## Upgrade IDA to v25.0.6
 
 ### Before you begin
 
@@ -26,10 +26,10 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p <ida_image_archive> -r <docker_registry>
 
 #Example of loading tar file and using private docker registry:
-scripts/loadImages.sh -p ida-25.0.5-java17.tar -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-25.0.6-java17.tar -r $REGISTRY_HOST
 
 #Example of loading tgz file and using private docker registry:
-scripts/loadImages.sh -p ida-25.0.5-java17.tgz -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-25.0.6-java17.tgz -r $REGISTRY_HOST
 ```
 
 Step 4. Log in to your cluster by either of the two ways.
@@ -61,6 +61,7 @@ Back up the Operator deployment and IDA instance configuration
 oc project <ida_project_name>
 
 mkdir -p idabackup
+oc get role/ida-operator -o yaml > idabackup/ida-operator-role.yaml
 oc get deployment/ida-operator -o yaml > idabackup/ida-operator.yaml
 oc get IDACluster/idadeploy -o yaml > idabackup/idadeploy.yaml
 ```
@@ -77,18 +78,15 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v25.0.5.
+Step 2. Updrade IDA operator to v25.0.6.
 
 ```
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.5
-```
+oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout pause deployment
 
-Step 3. Monitor the pod until it shows a STATUS of "Running":
+oc apply -f ./descriptors/namespaced/role.yaml
 
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.6
 ```
-oc get pods -w | grep ida-operator
-```
-
 
 ### Upgrade IDA Instance
 
@@ -101,12 +99,14 @@ oc project <ida_project_name>
 oc project ida
 ```
   
-Step 2. Updrade IDA to v25.0.5.
+Step 2. Updrade IDA to v25.0.6.
 
 ```
 oc get deployment | grep ida-web | awk '{print $1}' | xargs oc rollout pause deployment
 
-oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.5"}}}'
+oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.6"}}}'
+
+oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout resume deployment
 
 oc get deployment | grep ida-web | awk '{print $1}' | xargs oc delete deployment
 ```
@@ -114,7 +114,7 @@ oc get deployment | grep ida-web | awk '{print $1}' | xargs oc delete deployment
 Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
-oc get pods -w | grep ida-web
+oc get pods -w
 ```
 
 
@@ -134,17 +134,21 @@ oc project ida
 Step 2. Roll back IDA operator.
 
 ```
-#Delete the ida operator deployment of the upgraded release.
+#Delete the ida operator role and deployment of the upgraded release.
 oc delete deployment/ida-operator
 
+oc delete role/ida-operator
+
 #Apply the backup operator deployment
+oc apply -f idabackup/ida-operator-role.yaml
+
 oc apply -f idabackup/ida-operator.yaml
 ```
 
 Step 3. Monitor the pod until it shows a STATUS of "Running":
 
 ```
-oc get pods -w
+oc get pods -w | grep ida-operator
 ```
 
 
