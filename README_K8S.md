@@ -4,14 +4,7 @@ Planning for IDA deployment according to [System Requirements](docs/system-requi
 
 ## Before you begin
 
-Step 1. Download IDA operator scripts
-
-```
-git clone https://github.com/sdc-china/ida-operator.git
-cd ida-operator
-```
-
-Step 2. Install Kubectl
+Step 1. Install Kubectl
 
 ```
 #Latest Version:
@@ -22,6 +15,13 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 curl -LO "https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
+```
+
+Step 2. Download IDA operator scripts
+
+```
+git clone https://github.com/sdc-china/ida-operator.git
+cd ida-operator
 ```
 
 Step 3. Log in to your cluster by either of the two ways.
