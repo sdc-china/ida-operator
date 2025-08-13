@@ -6,7 +6,14 @@ For other Kubernetes platform please refer to [README_K8S](README_K8S.md).
 
 ## Before you begin
 
-Step 1. Log in to your cluster by either of the two ways.
+Step 1. Download IDA operator scripts
+
+```
+git clone https://github.com/sdc-china/ida-operator.git
+cd ida-operator
+```
+
+Step 2. Log in to your cluster by either of the two ways.
 
 - For installer with cluster-admin role
 
@@ -32,20 +39,12 @@ TOKEN=`oc get secret $TOKENNAME -o jsonpath='{.data.token}'| base64 --decode`
 oc login --token=$TOKEN --server=<OCP_API_SERVER>
 ```
 
-Step 2. Log in to your docker registry
-
+Step 3. Log in to your docker registry
 
 ```
 #Example of using private docker registry:
 REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
-```
-
-Step 3. Download IDA operator scripts
-
-```
-git clone https://github.com/sdc-china/ida-operator.git
-cd ida-operator
 ```
 
 Step 4. Load IDA docker images
@@ -327,4 +326,5 @@ oc delete IDACluster idadeploy
 ### Upgrade IDA Instance.
 
 Please refer to [IDA Upgrade](docs/upgrade-ida-to-latest.md).
+
 
