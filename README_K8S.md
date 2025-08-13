@@ -4,7 +4,14 @@ Planning for IDA deployment according to [System Requirements](docs/system-requi
 
 ## Before you begin
 
-Step 1. Install Kubectl
+Step 1. Download IDA operator scripts
+
+```
+git clone https://github.com/sdc-china/ida-operator.git
+cd ida-operator
+```
+
+Step 2. Install Kubectl
 
 ```
 #Latest Version:
@@ -17,7 +24,7 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 ```
 
-Step 2. Log in to your cluster by either of the two ways.
+Step 3. Log in to your cluster by either of the two ways.
 
 - For installer with cluster-admin role
 
@@ -53,19 +60,12 @@ kubectl config set-context ida/<cluster-host>:<port>/ida-installer --user=ida-in
 kubectl config use-context ida/<cluster-host>:<port>/ida-installer
 ```
 
-Step 3. Log in to your docker registry
+Step 4. Log in to your docker registry
 
 ```
 #Example of using private docker registry:
 REGISTRY_HOST=<YOUR_PRIVATE_REGISTRY>
 podman login --tls-verify=false $REGISTRY_HOST
-```
-
-Step 4. Download IDA operator scripts
-
-```
-git clone https://github.com/sdc-china/ida-operator.git
-cd ida-operator
 ```
 
 Step 5. Load IDA docker images
