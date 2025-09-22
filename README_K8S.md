@@ -43,8 +43,7 @@ kubectl apply -f ./descriptors/rbac/ida-installer-k8s.yml
 kubectl create clusterrolebinding ida-installer-rolebinding --clusterrole=ida-installer --serviceaccount=<ida_namespace>:ida-installer-sa
 
 #Get service account token
-kubectl apply -f ./descriptors/rbac/ida-installer-secret.yml
-TOKEN=`kubectl get secret ida-installer-secret -o jsonpath={.data.token} | base64 -d`
+TOKEN=`kubectl create token ida-installer-sa --duration=86400s`
 
 #Login service account
 kubectl config set-credentials ida-installer/<cluster-host>:<port> --token=$TOKEN
@@ -77,7 +76,7 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p ida-<version>-java17.tgz -r <docker_registry>
 
 #Example of using private docker registry:
-scripts/loadImages.sh -p ida-25.0.8-java17.tgz -r $REGISTRY_HOST/ida
+scripts/loadImages.sh -p ida-25.0.9-java17.tgz -r $REGISTRY_HOST/ida
 ```
 
 ## IDA Operator
@@ -107,7 +106,7 @@ chmod +x scripts/deployOperator.sh
 scripts/deployOperator.sh -i <operator_image> -s <image_pull_secret>
 
 #Example of operator:
-scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.8 -s ida-operator-secret
+scripts/deployOperator.sh -i $REGISTRY_HOST/ida/ida-operator:25.0.9 -s ida-operator-secret
 
 ```
 
@@ -153,7 +152,7 @@ Step 3. Upgrade IDA operator.
 
 ```
 #Example of using private docker registry:
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:25.0.8
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida/ida-operator:25.0.9
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
@@ -294,7 +293,7 @@ A custom resource YAML is a configuration file that describes an instance of a d
   Parameters | Description
   --- | --------------
   shared.imageRegistry | Image registry URL for all components, can be overridden individually. E.g., example.repository.com
-  shared.imageTag | Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.8
+  shared.imageTag | Image tag for IDA and Operator, can be overridden individually. E.g., 25.0.9
   shared.imagePullPolicy | Image pull policy, The possible values are "IfNotPresent", "Always", and "Never", the default value is **IfNotPresent**, can be overridden individually. 
   shared.imagePullSecrets | A list of secrets name to use for pulling images from registries. E.g., ["ida-docker-secret", "ida-operator-secret"].
   shared.storageClassName | Storage class if using dynamic provisioning. E.g., managed-nfs-storage
@@ -333,6 +332,27 @@ A custom resource YAML is a configuration file that describes an instance of a d
   idaWeb.tlsCertSecret | Secret name that contains the files **tls.crt** and **tls.key** for IDA. E.g., ida-tls-secret 
   idaWeb.trustedCertSecret | Secret name that contains trusted certificate files. E.g., ida-trusted-secret 
   idaWeb.network.type | IDA service expose type. The possible values are "route" and "ingress".
+  
+  - **Configuring Containerized Selenium Grid Server parameters (Optional)**
+
+  Parameters | Description
+  --- | --------------
+  selenium.imageRegistry | Image registry URL for selenium. E.g., example.repository.com
+  selenium.imageTag | Image tag for selenium hub and node, can be overridden individually. E.g., 4.10.0
+  selenium.imagePullPolicy | Image pull policy. The default value is **IfNotPresent**.
+  selenium.imagePullSecrets | A list of secrets name to use for pulling images from registries. E.g., ["ida-selenium-secret"].
+  selenium.resources.requests.cpu | Minimum number of CPUs required for Selenium container. The default value is **500m**.
+  selenium.resources.requests.memory | Minimum amount of memory required for Selenium container. The default value is **512Mi**.
+  selenium.resources.limits.cpu | Maximum number of CPUs allowed for Selenium container. The default value is **1**.
+  selenium.resources.limits.memory | Maximum amount of memory allowed for Selenium container. The default value is **1Gi**.
+  selenium.hub.imageName | Selenium Hub Image name. E.g., selenium/hub
+  selenium.hub.imageTag | Selenium Hub Image tag. E.g., 4.10.0
+  selenium.firefoxNode.imageName | Firefox Node Image name. E.g., selenium/node-firefox
+  selenium.firefoxNode.imageTag | Firefox Node Image tag. E.g., 4.10.0
+  selenium.chromeNode.imageName | Chrome Node Image name. E.g., selenium/node-chrome
+  selenium.chromeNode.imageTag | Chrome Node Image tag. E.g., 4.10.0
+  selenium.edgeNode.imageName | Edge Node Image name. E.g., selenium/node-edge
+  selenium.edgeNode.imageTag | Edge Node Image tag. E.g., 4.10.0
 
 - **Deploying IDA Custom Resource**
 
@@ -389,7 +409,7 @@ Follow the Step 2 of **Preparing to install IDA Instance** to prepare the new ID
 Step 3. Upgrade IDA Instance.
 
 ```
-kubectl patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.8"}}}'
+kubectl patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.9"}}}'
 ```
 
 Step 4. Monitor the pod until it shows a STATUS of "Running":
