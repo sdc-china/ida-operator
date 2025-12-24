@@ -1,4 +1,4 @@
-## Upgrade IDA to v25.0.11
+## Upgrade IDA to v25.0.12
 
 ### Before you begin
 
@@ -26,10 +26,10 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p <ida_image_archive> -r <docker_registry>
 
 #Example of loading tar file and using private docker registry:
-scripts/loadImages.sh -p ida-25.0.11-java17.tar -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-25.0.12-java17.tar -r $REGISTRY_HOST
 
 #Example of loading tgz file and using private docker registry:
-scripts/loadImages.sh -p ida-25.0.11-java17.tgz -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-25.0.12-java17.tgz -r $REGISTRY_HOST
 ```
 
 Step 4. Log in to your cluster by either of the two ways.
@@ -78,14 +78,14 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v25.0.11.
+Step 2. Updrade IDA operator to v25.0.12.
 
 ```
 oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout pause deployment
 
 oc apply -f ./descriptors/namespaced/role.yaml
 
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.11
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:25.0.12
 ```
 
 ### Upgrade IDA Instance
@@ -99,12 +99,12 @@ oc project <ida_project_name>
 oc project ida
 ```
   
-Step 2. Updrade IDA to v25.0.11.
+Step 2. Updrade IDA to v25.0.12.
 
 ```
 oc get deployment | grep ida-web | awk '{print $1}' | xargs oc rollout pause deployment
 
-oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.11"}}}'
+oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "25.0.12"}}}'
 
 oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout resume deployment
 
