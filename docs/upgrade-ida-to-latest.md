@@ -103,6 +103,9 @@ oc get deployment | grep ida-web | awk '{print $1}' | xargs oc rollout pause dep
 
 oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "26.0.1"}}}'
 
+#if you using jdk8 version, please run it.
+oc patch --type=merge idacluster/idadeploy -p '{"spec": {"idaWeb": {"jdkVersion": "8"}}}'
+
 oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout resume deployment
 
 oc get deployment | grep ida-web | awk '{print $1}' | xargs oc delete deployment
