@@ -1,4 +1,4 @@
-## Upgrade IDA to v26.0.1
+## Upgrade IDA to v26.0.2
 
 ### Before you begin
 
@@ -26,10 +26,10 @@ chmod +x scripts/loadImages.sh
 scripts/loadImages.sh -p <ida_image_archive> -r <docker_registry>
 
 #Example of loading tar file and using private docker registry:
-scripts/loadImages.sh -p ida-26.0.1-java17.tar -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-26.0.2-java17.tar -r $REGISTRY_HOST
 
 #Example of loading tgz file and using private docker registry:
-scripts/loadImages.sh -p ida-26.0.1-java17.tgz -r $REGISTRY_HOST
+scripts/loadImages.sh -p ida-26.0.2-java17.tgz -r $REGISTRY_HOST
 ```
 
 Step 4. Log in to your cluster by either of the two ways.
@@ -77,12 +77,12 @@ oc project <operator_project_name>
 oc project ida
 ```
 
-Step 2. Updrade IDA operator to v26.0.1.
+Step 2. Updrade IDA operator to v26.0.2.
 
 ```
 oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout pause deployment
 
-oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:26.0.1
+oc set image deployment/ida-operator operator=$REGISTRY_HOST/ida-operator:26.0.2
 ```
 
 ### Upgrade IDA Instance
@@ -96,15 +96,12 @@ oc project <ida_project_name>
 oc project ida
 ```
   
-Step 2. Updrade IDA to v26.0.1.
+Step 2. Updrade IDA to v26.0.2.
 
 ```
 oc get deployment | grep ida-web | awk '{print $1}' | xargs oc rollout pause deployment
 
-oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "26.0.1"}}}'
-
-#if you using jdk8 version, please run it.
-oc patch --type=merge idacluster/idadeploy -p '{"spec": {"idaWeb": {"jdkVersion": "8"}}}'
+oc patch --type=merge idacluster/idadeploy -p '{"spec": {"shared": {"imageTag": "26.0.2"}}}'
 
 oc get deployment | grep ida-operator | awk '{print $1}' | xargs oc rollout resume deployment
 
